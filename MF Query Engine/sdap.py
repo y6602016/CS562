@@ -1,6 +1,5 @@
 import psycopg2
 import collections
-import sys
 from config import config
 
 def connect():
