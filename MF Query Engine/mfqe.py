@@ -3,10 +3,18 @@ import collections
 from config import config
 from convertMFStructure import convertMFStructure
 from inputProcess import checkOperands, menu
+from outputProcess import writeMFStructure 
 
-
+globalIndentation = 1
+script = "import psycopg2\nimport collections\ndef query():\n"
 
 def connect():
+  global globalIndentation
+  template = open('template.txt',mode='r')
+  script = template.read() + "\n"
+  template.close()
+
+  # script = "import psycopg2\nimport collections\ndef query():\n"
   menu()
   conn = None
   try:
@@ -37,7 +45,12 @@ def connect():
     else:
       # 1. Call a function to produce MF-Struture
       mf_structure = convertMFStructure(operands, cur)
-      group = collections.defaultdict(lambda:mf_structure)
+      script = writeMFStructure(mf_structure, script, globalIndentation)
+      file = open('output.py',mode='w')
+      file.write(script)
+      file.close()
+
+      # group = collections.defaultdict(lambda:mf_structure)
       
 
     
@@ -52,7 +65,6 @@ def connect():
   finally:
     if conn is not None:
       conn.close()
-      # print('Database connection closed.')
 
 
 if __name__ == '__main__':

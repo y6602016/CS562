@@ -1,0 +1,8 @@
+import psycopg2
+import collections
+from config import config
+
+def query():
+  params = config()
+  conn = psycopg2.connect(**params)
+  cur = conn.cursor()
