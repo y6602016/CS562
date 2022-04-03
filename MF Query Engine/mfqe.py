@@ -1,4 +1,5 @@
 import psycopg2
+import collections
 from config import config
 from convertMFStructure import convertMFStructure
 from inputProcess import checkOperands, menu
@@ -36,7 +37,8 @@ def connect():
     else:
       # 1. Call a function to produce MF-Struture
       mf_structure = convertMFStructure(operands, cur)
-      print(mf_structure)
+      group = collections.defaultdict(lambda:mf_structure)
+      
 
     
     
