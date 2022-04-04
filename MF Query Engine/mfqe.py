@@ -62,6 +62,7 @@ def connect():
 
       # script, group_attr_index = writeGroupAttrIndex(V, schema, script, global_indentation)
 
+      # find attr which are in mf-structure but no
       script = writeFirstScan(V, F, schema, script, global_indentation)
       
       script = writeProject(S, script, global_indentation)

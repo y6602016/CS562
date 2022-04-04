@@ -46,6 +46,8 @@ def writeFirstScan(V, F, schema, script, global_indentation):
     if splitted[0] == "0":
       F0.append((splitted[1], splitted[2], f))
   
+  group_attr = "(" + ", ".join(V) + ")"
+
   if len(F0):
     for f in F0:
       if "avg" in f[0]:
@@ -61,37 +63,12 @@ def writeFirstScan(V, F, schema, script, global_indentation):
     for attr in fun_attr_set:
       script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
 
-    group_attr = "(" + ", ".join(V) + ")"
-
-    # avg
     if len(F0):
       for f in F0:
         if f[0] == "avg":
-          script += avgScript(group_attr, f, global_indentation)
-    # s = "group[" + t + ']["'  + F0[0][2] + '"]'
-    # c = "count[" + t + "]"
-
-    # script += ((" " * global_indentation) + "if not " + s + ":\n")
-    # global_indentation += 2
-    # script += ((" " * global_indentation) + s + " = " + F0[0][1] + "\n")
-    # script += ((" " * global_indentation) + c + " += 1\n")
-    # global_indentation -= 2 
-
-    # script += ((" " * global_indentation) + "else:\n")
-    # global_indentation += 2
-    # script += ((" " * global_indentation) + c + "\n")
-    # script += ((" " * global_indentation) + s + " += ((" + F0[0][1] + " - " + s + ")/" + c + ")\n")
-    # global_indentation -= 2
-    
-    # max
-    s = "group[" + group_attr + ']["'  + F0[1][2] + '"]'
-    script += ((" " * global_indentation) + "if not " + s + ":\n")
-    global_indentation += 2
-    script += ((" " * global_indentation) + s + " = " + F0[0][1] + "\n")
-    global_indentation -= 2 
-    script += ((" " * global_indentation) + "else:\n")
-    global_indentation += 2
-    script += ((" " * global_indentation) + s + " = max(" + F0[1][1] + ", " + s + ")\n\n")
+          script += avgScript(group_attr, f, global_indentation, None)
+        elif f[0] == "max":
+          script += maxScript(group_attr, f, global_indentation, None)
 
 
   return script
