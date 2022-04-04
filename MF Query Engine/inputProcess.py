@@ -71,12 +71,12 @@ def menu():
 def checkOperands(input_file):
   # use a dict to store all operands' values
   operands = {
-    "SELECT ATTRIBUTE(S)" : [],
-    "NUMBER OF GROUPING VARIABLES(n)": [],
-    "GROUPING ATTRIBUTES(V)": [],
-    "F-VECT([F])": [],
-    "SELECT CONDITION-VECT([σ])": [],
-    "HAVING_CONDITION(G)": []
+    "SELECT ATTRIBUTE(S)" : list(),
+    "NUMBER OF GROUPING VARIABLES(n)": list(),
+    "GROUPING ATTRIBUTES(V)": list(),
+    "F-VECT([F])": list(),
+    "SELECT CONDITION-VECT([σ])": list(),
+    "HAVING_CONDITION(G)": list()
   }
 
   # split input with new line
@@ -97,8 +97,10 @@ def checkOperands(input_file):
   if not operands["SELECT ATTRIBUTE(S)"] or not operands["NUMBER OF GROUPING VARIABLES(n)"]:
     return False
 
+
   if int(operands["NUMBER OF GROUPING VARIABLES(n)"][0]) < 0:
     return False
+  
 
   if int(operands["NUMBER OF GROUPING VARIABLES(n)"][0]) >= 0 and not operands["GROUPING ATTRIBUTES(V)"]:
     return False

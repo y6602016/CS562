@@ -5,4 +5,8 @@ from config import config
 def query():
   params = config()
   conn = psycopg2.connect(**params)
-  cur = conn.cursor()
+  cursor = conn.cursor()
+
+  query = 'select * from sales where year = 2019'
+  cursor.execute(query)
+  
