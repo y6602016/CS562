@@ -1,3 +1,6 @@
+from aggregateProcess import *
+
+
 def writeMFStructure(mf_structure, script, global_indentation):
   # mf_structure = str(mf_structure)[1:-1].split(", ")
 
@@ -15,7 +18,7 @@ def writeMFStructure(mf_structure, script, global_indentation):
 
   # global_indentation -= 2
   # script += ((" " * global_indentation) + "}\n")
-  script += ((" " * global_indentation) + "group = collections.defaultdict(lambda:mf_structure)\n\n")
+  script += ((" " * global_indentation) + "group = collections.defaultdict(lambda: dict(mf_structure))\n\n")
 
   return script
 
@@ -33,10 +36,11 @@ def writeGroupAttrIndex(V, schema, script, global_indentation):
   #     script += (str(attr) + ")")
   return script, group_attr_index
 
-def writeScan(V, F, schema, script, global_indentation):
-
+def writeFirstScan(V, F, schema, script, global_indentation):
+  # ex:
+  # F = ["0_avg_quant", "0_max_quant"]
+  # F0 = [("avg", "quant", "0_avg_quant"), ("max", "quant", "0_max_quant")]
   F0 = []
-
   for f in F:
     splitted = f.split("_")
     if splitted[0] == "0":
@@ -45,10 +49,10 @@ def writeScan(V, F, schema, script, global_indentation):
   if len(F0):
     for f in F0:
       if "avg" in f[0]:
-        script += ((" " * global_indentation) + "count = collections.defaultdict(int)\n")
+        script += ((" " * global_indentation) + "count_" +  f[1] + "= collections.defaultdict(int)\n")
+    
     script += ((" " * global_indentation) + "for row in cursor:\n")
     global_indentation += 2
-    
 
     for attr in V:
       script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
@@ -57,21 +61,30 @@ def writeScan(V, F, schema, script, global_indentation):
     for attr in fun_attr_set:
       script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
 
-    t = "(" + ", ".join(V) + ")"
+    group_attr = "(" + ", ".join(V) + ")"
 
-    s = "group[" + t + ']["'  + F0[0][2] + '"]'
-    script += ((" " * global_indentation) + "if not " + s + ":\n")
-    global_indentation += 2
-    script += ((" " * global_indentation) + s + " = " + F0[0][1] + "\n")
-    global_indentation -= 2 
-    script += ((" " * global_indentation) + "else:\n")
-    global_indentation += 2
-    script += ((" " * global_indentation) + s + " += " + F0[0][1] + "\n")
-    global_indentation -= 2
-    s = "count[" + t + "]"
-    script += ((" " * global_indentation) + s + " += 1\n")
+    # avg
+    if len(F0):
+      for f in F0:
+        if f[0] == "avg":
+          script += avgScript(group_attr, f, global_indentation)
+    # s = "group[" + t + ']["'  + F0[0][2] + '"]'
+    # c = "count[" + t + "]"
 
-    s = "group[" + t + ']["'  + F0[1][2] + '"]'
+    # script += ((" " * global_indentation) + "if not " + s + ":\n")
+    # global_indentation += 2
+    # script += ((" " * global_indentation) + s + " = " + F0[0][1] + "\n")
+    # script += ((" " * global_indentation) + c + " += 1\n")
+    # global_indentation -= 2 
+
+    # script += ((" " * global_indentation) + "else:\n")
+    # global_indentation += 2
+    # script += ((" " * global_indentation) + c + "\n")
+    # script += ((" " * global_indentation) + s + " += ((" + F0[0][1] + " - " + s + ")/" + c + ")\n")
+    # global_indentation -= 2
+    
+    # max
+    s = "group[" + group_attr + ']["'  + F0[1][2] + '"]'
     script += ((" " * global_indentation) + "if not " + s + ":\n")
     global_indentation += 2
     script += ((" " * global_indentation) + s + " = " + F0[0][1] + "\n")
@@ -88,6 +101,6 @@ def writeScan(V, F, schema, script, global_indentation):
 def writeProject(S, script, global_indentation):
   script += ((" " * global_indentation) + "for key, val in group.items():\n")
   global_indentation += 2
-  script += ((" " * global_indentation) + "print(key[0], key[1], val['0_avg_quant'] / count[key], val['0_max_quant'])\n\n")
+  script += ((" " * global_indentation) + "print(key[0], key[1], val['0_avg_quant'], val['0_max_quant'])\n\n")
 
   return script

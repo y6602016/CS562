@@ -3,7 +3,7 @@ import collections
 from config import config
 from convertMFStructure import convertMFStructure
 from inputProcess import checkOperands, menu
-from outputProcess import writeMFStructure, writeScan, writeProject
+from outputProcess import writeMFStructure, writeFirstScan, writeProject
 
 global_indentation = 2
 script = "import psycopg2\nimport collections\ndef query():\n"
@@ -62,7 +62,7 @@ def connect():
 
       # script, group_attr_index = writeGroupAttrIndex(V, schema, script, global_indentation)
 
-      script = writeScan(V, F, schema, script, global_indentation)
+      script = writeFirstScan(V, F, schema, script, global_indentation)
       
       script = writeProject(S, script, global_indentation)
       
