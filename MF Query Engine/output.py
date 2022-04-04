@@ -10,7 +10,7 @@ def query():
   query = 'select * from sales where year = 2019'
   cursor.execute(query)
   
-  mf_structure = {'cust': None, 'prod': None, '0_avg_quant': None, '0_max_quant': None}
+  mf_structure = {'cust': None, 'prod': None, '0_avg_quant': None, '0_max_quant': None, '0_sum_quant': None, '0_count_quant': None}
   group = collections.defaultdict(lambda: dict(mf_structure))
 
   count_quant= collections.defaultdict(int)
@@ -29,8 +29,18 @@ def query():
     else:
       group[(cust, prod)]["0_max_quant"] = max(quant, group[(cust, prod)]["0_max_quant"])
 
+    if not group[(cust, prod)]["0_sum_quant"]:
+      group[(cust, prod)]["0_sum_quant"] = quant
+    else:
+      group[(cust, prod)]["0_sum_quant"] += quant
+
+    if not group[(cust, prod)]["0_count_quant"]:
+      group[(cust, prod)]["0_count_quant"] = 1
+    else:
+      group[(cust, prod)]["0_count_quant"] += 1
+
   for key, val in group.items():
-    print(key[0], key[1], val['0_avg_quant'], val['0_max_quant'])
+    print(key[0], key[1], val['0_avg_quant'], val['0_max_quant'], val['0_sum_quant'], val['0_count_quant'])
 
 if __name__ == "__main__":
   query()

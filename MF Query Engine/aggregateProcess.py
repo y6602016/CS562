@@ -54,3 +54,39 @@ def minScript(group_attr, func, global_indentation, condition):
   min += ((" " * global_indentation) + group_key + " = min(" + func[1] + ", " + group_key + ")\n\n")
 
   return min
+
+
+def countScript(group_attr, func, global_indentation, condition):
+  count = ""
+  group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
+  
+  count += ((" " * global_indentation) + "if not " + group_key + ":\n")
+  global_indentation += 2
+  count += ((" " * global_indentation) + group_key + " = 1\n")
+  global_indentation -= 2 
+  count += ((" " * global_indentation) + "else:\n")
+  global_indentation += 2
+  if condition:
+    avg += ((" " * global_indentation) + "if " + condition + ":\n")
+    global_indentation += 2
+  count += ((" " * global_indentation) + group_key + " += 1\n\n")
+
+  return count
+
+def sumScript(group_attr, func, global_indentation, condition):
+  sum = ""
+
+  group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
+  
+  sum += ((" " * global_indentation) + "if not " + group_key + ":\n")
+  global_indentation += 2
+  sum += ((" " * global_indentation) + group_key + " = " + func[1] + "\n")
+  global_indentation -= 2 
+  sum += ((" " * global_indentation) + "else:\n")
+  global_indentation += 2
+  if condition:
+    avg += ((" " * global_indentation) + "if " + condition + ":\n")
+    global_indentation += 2
+  sum += ((" " * global_indentation) + group_key + " += " + func[1] +"\n\n")
+
+  return sum

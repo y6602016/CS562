@@ -48,27 +48,35 @@ def writeFirstScan(V, F, schema, script, global_indentation):
   
   group_attr = "(" + ", ".join(V) + ")"
 
-  if len(F0):
-    for f in F0:
-      if "avg" in f[0]:
-        script += ((" " * global_indentation) + "count_" +  f[1] + "= collections.defaultdict(int)\n")
-    
-    script += ((" " * global_indentation) + "for row in cursor:\n")
-    global_indentation += 2
+  if not len(F0):
+    return script
 
-    for attr in V:
-      script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
 
-    fun_attr_set = set(f[1] for f in F0)
-    for attr in fun_attr_set:
-      script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
+  for f in F0:
+    if "avg" in f[0]:
+      script += ((" " * global_indentation) + "count_" +  f[1] + "= collections.defaultdict(int)\n")
+  
+  script += ((" " * global_indentation) + "for row in cursor:\n")
+  global_indentation += 2
 
-    if len(F0):
-      for f in F0:
-        if f[0] == "avg":
-          script += avgScript(group_attr, f, global_indentation, None)
-        elif f[0] == "max":
-          script += maxScript(group_attr, f, global_indentation, None)
+  for attr in V:
+    script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
+
+  fun_attr_set = set(f[1] for f in F0)
+  for attr in fun_attr_set:
+    script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
+
+  for f in F0:
+    if f[0] == "avg":
+      script += avgScript(group_attr, f, global_indentation, None)
+    elif f[0] == "max":
+      script += maxScript(group_attr, f, global_indentation, None)
+    elif f[0] == "min":
+      script += minScript(group_attr, f, global_indentation, None)
+    elif f[0] == "count":
+      script += countScript(group_attr, f, global_indentation, None)
+    elif f[0] == "sum":
+      script += sumScript(group_attr, f, global_indentation, None)
 
 
   return script
