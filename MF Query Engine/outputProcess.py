@@ -66,6 +66,13 @@ def writeFirstScan(V, F, schema, script, global_indentation):
   for attr in fun_attr_set:
     script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
 
+  group_key = "group[" + group_attr + "]"
+  script += ((" " * global_indentation) + "if not " + group_key + '["' + V[0] + '"]:\n')
+  global_indentation += 2
+  for v in V:
+    script += ((" " * global_indentation) + group_key + '["' + v + '"]' + " = " + v + "\n")
+  global_indentation -= 2
+
   for f in F0:
     if f[0] == "avg":
       script += avgScript(group_attr, f, global_indentation, None)
@@ -84,8 +91,14 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
 # need fix
 def writeProject(S, script, global_indentation):
-  script += ((" " * global_indentation) + "for key, val in group.items():\n")
+  script += ((" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2
-  script += ((" " * global_indentation) + "print(key[0], key[1], val['0_avg_quant'], val['0_max_quant'])\n\n")
+  all_output_attr = ""
+  for i, s in enumerate(S):
+    if i != len(S):
+      all_output_attr += 'val["' + s + '"], '
+    else:
+      all_output_attr += 'val["' + s + '"]'
+  script += ((" " * global_indentation) + "print(" + all_output_attr + ")\n\n")
 
   return script

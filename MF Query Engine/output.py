@@ -18,6 +18,9 @@ def query():
     cust = row[0]
     prod = row[1]
     quant = row[6]
+    if not group[(cust, prod)]["cust"]:
+      group[(cust, prod)]["cust"] = cust
+      group[(cust, prod)]["prod"] = prod
     if not group[(cust, prod)]["0_avg_quant"]:
       group[(cust, prod)]["0_avg_quant"] = quant
       count_quant[(cust, prod)] += 1
@@ -39,8 +42,8 @@ def query():
     else:
       group[(cust, prod)]["0_count_quant"] += 1
 
-  for key, val in group.items():
-    print(key[0], key[1], val['0_avg_quant'], val['0_max_quant'], val['0_sum_quant'], val['0_count_quant'])
+  for val in group.values():
+    print(val["cust"], val["prod"], val["0_avg_quant"], val["0_max_quant"], val["0_sum_quant"], val["0_count_quant"], )
 
 if __name__ == "__main__":
   query()
