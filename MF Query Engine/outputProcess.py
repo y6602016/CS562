@@ -2,22 +2,10 @@ from aggregateProcess import *
 
 
 def writeMFStructure(mf_structure, script, global_indentation):
-  # mf_structure = str(mf_structure)[1:-1].split(", ")
-
   script += ((" " * global_indentation) + "mf_structure = ")
   
   script += (str(mf_structure) + "\n")
-  
-  # global_indentation += 2
 
-  # for i, item in enumerate(mf_structure):
-  #   if i != len(mf_structure) - 1:
-  #     script += ((" " * global_indentation) + item + ",\n")
-  #   else:
-  #     script += ((" " * global_indentation) + item + "\n")
-
-  # global_indentation -= 2
-  # script += ((" " * global_indentation) + "}\n")
   script += ((" " * global_indentation) + "group = collections.defaultdict(lambda: dict(mf_structure))\n\n")
 
   return script
@@ -29,11 +17,6 @@ def writeGroupAttrIndex(V, schema, script, global_indentation):
     if attr in V:
       group_attr_index.append(i)
   script += (str(group_attr_index) + "\n\n")
-  # for i, attr in enumerate(group_attr):
-  #   if i != len(group_attr) - 1:
-  #     script += (str(attr) + ", ")
-  #   else:
-  #     script += (str(attr) + ")")
   return script, group_attr_index
 
 def writeFirstScan(V, F, schema, script, global_indentation):
@@ -47,9 +30,6 @@ def writeFirstScan(V, F, schema, script, global_indentation):
       F0.append((splitted[1], splitted[2], f))
   
   group_attr = "(" + ", ".join(V) + ")"
-
-  if not len(F0):
-    return script
 
 
   for f in F0:

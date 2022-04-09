@@ -24,6 +24,8 @@ def menu():
         N = input("Please enter the number of grouping variable.\nEx: 3\n")
         if int(N) < 0:
           print("Please enter a value >= 0\n")
+        else:
+          break
       file.write(N + "\n")
 
       file.write("GROUPING ATTRIBUTES(V):\n")
@@ -55,7 +57,7 @@ def menu():
           break
         else:
           inputs.append(value)
-      conditions = "\n".join(inputs)
+      conditions = ",\n".join(inputs)
       file.write(conditions + "\n")
       inputs = []
 
