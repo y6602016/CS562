@@ -1,5 +1,4 @@
 import collections
-from xml.sax.handler import DTDHandler
 
 def processRel(N, F, C):
   group_variable_fs = collections.defaultdict(list)

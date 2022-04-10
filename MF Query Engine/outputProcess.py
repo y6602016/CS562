@@ -68,6 +68,10 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
   return script
 
+def writeGroupVariableScan(mf_structure, V, schema, group_variable_fs, 
+  group_variable_conditions, script, global_indentation):
+  pass  
+
 
 # need fix
 def writeProject(S, script, global_indentation):

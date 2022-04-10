@@ -3,8 +3,10 @@ import collections
 from config import config
 from convertMFStructure import convertMFStructure
 from inputProcess import checkOperands, menu
-from outputProcess import writeMFStructure, writeFirstScan, writeProject
+from outputProcess import writeMFStructure, writeFirstScan, writeProject, writeGroupVariableScan
 from groupVariableProcess import processRel
+
+
 global_indentation = 2
 script = "import psycopg2\nimport collections\ndef query():\n"
 
@@ -84,7 +86,8 @@ def connect():
             in_degrees[next_val] -= 1
             if in_degrees[next_val] == 0:
               queue.append(next_val)
-        print(to_be_scan)
+        writeGroupVariableScan(mf_structure, V, schema, group_variable_fs, 
+          group_variable_conditions, script, global_indentation)
       
       script = writeProject(S, script, global_indentation)
       
