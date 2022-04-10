@@ -7,6 +7,6 @@ def query():
   conn = psycopg2.connect(**params)
   cursor = conn.cursor()
 
-  query = 'select * from sales where year = 2019'
+  query = 'select * from sales'
   cursor.execute(query)
   

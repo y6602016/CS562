@@ -46,7 +46,7 @@ def connect():
     query = "select column_name from information_schema.columns where table_name = 'sales' order by ordinal_position"
     cur.execute(query)
     schema = {attr[0] : str(i) for i, attr in enumerate(cur.fetchall())}
-
+    print(schema)
     if not operands:
       print("Input values are not valid")
     else:
@@ -62,10 +62,11 @@ def connect():
       
       script = writeMFStructure(mf_structure, script, global_indentation)
 
-      # find attr which are in mf-structure but no
+      # initial scan
+      script += ("\n\n" + (" " * global_indentation) + "#1th Scan:\n")
       script = writeFirstScan(V, F, schema, script, global_indentation)
 
-      group_variable_fs, group_variable_conditions, depend_map = processRel(N, F, C)
+      group_variable_fs, depend_map = processRel(N, F)
 
       # topological sorting preparation
       edges = collections.defaultdict(list)   
@@ -75,6 +76,7 @@ def connect():
           in_degrees[value] += 1
           edges[depend_val].append(value)
 
+      scan_times = 1
       queue = collections.deque([index for index, val in enumerate(in_degrees) if index > 0 and val == 0])
       while queue:
         q_length = len(queue)
@@ -86,8 +88,9 @@ def connect():
             in_degrees[next_val] -= 1
             if in_degrees[next_val] == 0:
               queue.append(next_val)
-        writeGroupVariableScan(mf_structure, V, schema, group_variable_fs, 
-          group_variable_conditions, script, global_indentation)
+        script += ("\n\n" + (" " * global_indentation) + f"#{scan_times + 1}th Scan:\n")
+        scan_times += 1
+        script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, script, global_indentation)
       
       script = writeProject(S, script, global_indentation)
       
