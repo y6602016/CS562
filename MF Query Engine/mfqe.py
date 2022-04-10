@@ -4,7 +4,7 @@ from config import config
 from convertMFStructure import convertMFStructure
 from inputProcess import checkOperands, menu
 from outputProcess import writeMFStructure, writeFirstScan, writeProject
-
+from groupVariableProcess import processRel
 global_indentation = 2
 script = "import psycopg2\nimport collections\ndef query():\n"
 
@@ -31,7 +31,7 @@ def connect():
 
 
     # Open a file: file
-    file = open('query_input2.txt',mode='r')
+    file = open('query_input.txt',mode='r')
     
     # read all lines at once
     input_file = file.read()
@@ -60,10 +60,31 @@ def connect():
       
       script = writeMFStructure(mf_structure, script, global_indentation)
 
-      # script, group_attr_index = writeGroupAttrIndex(V, schema, script, global_indentation)
-
       # find attr which are in mf-structure but no
       script = writeFirstScan(V, F, schema, script, global_indentation)
+
+      group_variable_fs, group_variable_conditions, depend_map = processRel(N, F, C)
+
+      # topological sorting preparation
+      edges = collections.defaultdict(list)   
+      in_degrees = [0] * (int(N[0]) + 1)
+      for value, depend_list in depend_map.items():
+        for depend_val in depend_list:
+          in_degrees[value] += 1
+          edges[depend_val].append(value)
+
+      queue = collections.deque([index for index, val in enumerate(in_degrees) if index > 0 and val == 0])
+      while queue:
+        q_length = len(queue)
+        to_be_scan = []
+        for i in range(q_length):
+          val = queue.popleft()
+          to_be_scan.append(val)
+          for next_val in edges[val]:
+            in_degrees[next_val] -= 1
+            if in_degrees[next_val] == 0:
+              queue.append(next_val)
+        print(to_be_scan)
       
       script = writeProject(S, script, global_indentation)
       
