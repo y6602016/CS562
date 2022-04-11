@@ -33,7 +33,7 @@ def connect():
 
 
     # Open a file: file
-    file = open('query_input.txt',mode='r')
+    file = open('query_input3.txt',mode='r')
     
     # read all lines at once
     input_file = file.read()
@@ -46,7 +46,7 @@ def connect():
     query = "select column_name from information_schema.columns where table_name = 'sales' order by ordinal_position"
     cur.execute(query)
     schema = {attr[0] : str(i) for i, attr in enumerate(cur.fetchall())}
-    print(schema)
+
     if not operands:
       print("Input values are not valid")
     else:
@@ -66,7 +66,7 @@ def connect():
       script += ("\n\n" + (" " * global_indentation) + "#1th Scan:\n")
       script = writeFirstScan(V, F, schema, script, global_indentation)
 
-      group_variable_fs, depend_map = processRel(N, F)
+      group_variable_fs, depend_map, depend_fun = processRel(N, C, F)
 
       # topological sorting preparation
       edges = collections.defaultdict(list)   
@@ -78,6 +78,7 @@ def connect():
 
       scan_times = 1
       queue = collections.deque([index for index, val in enumerate(in_degrees) if index > 0 and val == 0])
+
       while queue:
         q_length = len(queue)
         to_be_scan = []
@@ -90,7 +91,7 @@ def connect():
               queue.append(next_val)
         script += ("\n\n" + (" " * global_indentation) + f"#{scan_times + 1}th Scan:\n")
         scan_times += 1
-        script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, script, global_indentation)
+        script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, script, global_indentation)
       
       script = writeProject(S, script, global_indentation)
       

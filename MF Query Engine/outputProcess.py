@@ -72,7 +72,7 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
   return script
 
-def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, script, global_indentation):
+def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, script, global_indentation):
   
   script += ((" " * global_indentation) + "cursor.execute(query)\n\n")
 
@@ -95,7 +95,7 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, script, 
       for attr in V:
         script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
 
-    processed_condition, such_that_attr = processCondition(V, group_variable, C[group_variable - 1], group_attr, schema)
+    processed_condition, such_that_attr = processCondition(V, group_variable, C[group_variable - 1], group_attr, schema, depend_fun)
 
     # extract aggregated attributes and attr used in such that clause (ex: quant)
     script += (f"\n\n" + (" " * global_indentation) + f"#Process Grouping Variable {group_variable}:\n")
@@ -122,7 +122,6 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, script, 
 
 
 
-# need fix
 def writeProject(S, script, global_indentation):
   script += ("\n\n" + (" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2

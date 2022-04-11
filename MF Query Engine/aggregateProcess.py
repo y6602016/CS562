@@ -61,15 +61,15 @@ def countScript(group_attr, func, group_variable, global_indentation, condition)
   count = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
+  if condition:
+    count += ((" " * global_indentation) + "if " + condition + ":\n")
+    global_indentation += 2
   count += ((" " * global_indentation) + "if not " + group_key + ":\n")
   global_indentation += 2
   count += ((" " * global_indentation) + group_key + " = 1\n")
   global_indentation -= 2 
   count += ((" " * global_indentation) + "else:\n")
   global_indentation += 2
-  if condition:
-    count += ((" " * global_indentation) + "if " + condition + ":\n")
-    global_indentation += 2
   count += ((" " * global_indentation) + group_key + " += 1\n\n")
 
   return count
