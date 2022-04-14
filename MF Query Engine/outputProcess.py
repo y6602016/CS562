@@ -38,6 +38,7 @@ def writeFirstScan(V, F, schema, script, global_indentation):
   
   script += ((" " * global_indentation) + "for row in cursor:\n")
   global_indentation += 2
+  script += ((" " * global_indentation) + "#Grouping attributes:\n")
 
   # extract grouping attributes (ex: cust, prod)
   for attr in V:

@@ -17,6 +17,7 @@ def query():
 
   #1th Scan:
   for row in cursor:
+    #Grouping attributes:
     cust = row[0]
     quant = row[6]
     if not group[(cust)]["cust"]:
@@ -35,20 +36,20 @@ def query():
     cust = row[0]
 
     #Process Grouping Variable 1:
-    state = row[5]
-    date = row[7]
     quant = row[6]
-    if group[(cust)]["cust"] == cust and date > 96/05/31 and date < 96/09/0:
+    date = row[7]
+    state = row[5]
+    if group[(cust)]["cust"] == cust and date > 2019-05-31 and date < 2019-09-01:
       if not group[(cust)]["1_max_quant"]:
         group[(cust)]["1_max_quant"] = quant
-        group[(cust)]["1.state"] = state
-        group[(cust)]["1.quant"] = quant
         group[(cust)]["1.date"] = date
+        group[(cust)]["1.quant"] = quant
+        group[(cust)]["1.state"] = state
       else:
         group[(cust)]["1_max_quant"] = max(quant, group[(cust)]["1_max_quant"])
-        group[(cust)]["1.state"] = state
-        group[(cust)]["1.quant"] = quant
         group[(cust)]["1.date"] = date
+        group[(cust)]["1.quant"] = quant
+        group[(cust)]["1.state"] = state
 
 
   for val in group.values():

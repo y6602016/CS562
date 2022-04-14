@@ -48,8 +48,8 @@ def processCondition(V, group_variable, condition, group_attr, schema, depend_fu
   such_that_attr = []
   i = 0
 
-  while i < len(condition) - 1:
-    if condition[i] == str(group_variable) and condition[i + 1] == ".":
+  while i < len(condition):
+    if condition[i] == str(group_variable) and i + 1 < len(condition) and condition[i + 1] == ".":
       j = i + 2
       while j < len(condition) and condition[j].isalpha():
         j += 1

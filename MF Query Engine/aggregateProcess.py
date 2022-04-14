@@ -116,13 +116,7 @@ def noAggregate(group_attr, attrs, global_indentation, condition):
 
   for attr in attrs:
     group_key = "group[" + group_attr + ']["'  + attr + '"]'
-    update += ((" " * global_indentation) + "if not " + group_key + ":\n")
-    global_indentation += 2
     update += ((" " * global_indentation) + group_key + " = " + attr.split(".")[1]  + "\n")
-    global_indentation -= 2 
-    update += ((" " * global_indentation) + "else:\n")
-    global_indentation += 2
-    update += ((" " * global_indentation) + group_key + " += " + attr.split(".")[1]  + "\n\n")
-    global_indentation -= 2
+
 
   return update
