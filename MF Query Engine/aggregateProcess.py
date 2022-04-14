@@ -21,43 +21,59 @@ def avgScript(group_attr, func, group_variable, global_indentation, condition):
   return avg
 
 
-def maxScript(group_attr, func, group_variable, global_indentation, condition):
+def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_indentation, condition):
   max = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
 
-  max += ((" " * global_indentation) + "if not " + group_key + ":\n")
-  global_indentation += 2
-  max += ((" " * global_indentation) + group_key + " = " + func[1]  + "\n")
-  global_indentation -= 2 
-  max += ((" " * global_indentation) + "else:\n")
-  global_indentation += 2
   if condition:
     max += ((" " * global_indentation) + "if " + condition + ":\n")
     global_indentation += 2
-  max += ((" " * global_indentation) + group_key + " = max(" + func[1]  + ", " + group_key + ")\n\n")
+  max += ((" " * global_indentation) + "if not " + group_key + ":\n")
+  global_indentation += 2
+  max += ((" " * global_indentation) + group_key + " = " + func[1]  + "\n")
+  if group_variable_attrs_max_aggregate:
+    for attr in group_variable_attrs_max_aggregate:
+      group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'
+      max += ((" " * global_indentation) + group_attr_key + " = " + attr.split(".")[1] + "\n")
+  global_indentation -= 2 
+  max += ((" " * global_indentation) + "else:\n")
+  global_indentation += 2
+  max += ((" " * global_indentation) + group_key + " = max(" + func[1]  + ", " + group_key + ")\n")
+  if group_variable_attrs_max_aggregate:
+    for attr in group_variable_attrs_max_aggregate:
+      group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'
+      max += ((" " * global_indentation) + group_attr_key + " = " + attr.split(".")[1] + "\n")
 
   return max
 
 
-def minScript(group_attr, func, group_variable, global_indentation, condition):
+def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_indentation, condition):
   min = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
-  min += ((" " * global_indentation) + "if not " + group_key + ":\n")
-  global_indentation += 2
-  min += ((" " * global_indentation) + group_key + " = " + func[1]  + "\n")
-  global_indentation -= 2 
-  min += ((" " * global_indentation) + "else:\n")
-  global_indentation += 2
   if condition:
     min += ((" " * global_indentation) + "if " + condition + ":\n")
     global_indentation += 2
-  min += ((" " * global_indentation) + group_key + " = min(" + func[1]  + ", " + group_key + ")\n\n")
+  min += ((" " * global_indentation) + "if not " + group_key + ":\n")
+  global_indentation += 2
+  min += ((" " * global_indentation) + group_key + " = " + func[1]  + "\n")
+  if group_variable_attrs_min_aggregate:
+    for attr in group_variable_attrs_min_aggregate:
+      group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'
+      min += ((" " * global_indentation) + group_attr_key + " = " + attr.split(".")[1] + "\n")
+  global_indentation -= 2 
+  min += ((" " * global_indentation) + "else:\n")
+  global_indentation += 2
+  min += ((" " * global_indentation) + group_key + " = min(" + func[1]  + ", " + group_key + ")\n")
+  if group_variable_attrs_min_aggregate:
+    for attr in group_variable_attrs_min_aggregate:
+      group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'
+      min += ((" " * global_indentation) + group_attr_key + " = " + attr.split(".")[1] + "\n")
 
   return min
 
 
-def countScript(group_attr, func, group_variable, global_indentation, condition):
+def countScript(group_attr, func, global_indentation, condition):
   count = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
@@ -74,7 +90,7 @@ def countScript(group_attr, func, group_variable, global_indentation, condition)
 
   return count
 
-def sumScript(group_attr, func, group_variable, global_indentation, condition):
+def sumScript(group_attr, func, global_indentation, condition):
   sum = ""
 
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
@@ -91,3 +107,22 @@ def sumScript(group_attr, func, group_variable, global_indentation, condition):
   sum += ((" " * global_indentation) + group_key + " += " + func[1]  + "\n\n")
 
   return sum
+
+def noAggregate(group_attr, attrs, global_indentation, condition):
+  update = ""
+
+  update += ((" " * global_indentation) + "if " + condition + ":\n")
+  global_indentation += 2
+
+  for attr in attrs:
+    group_key = "group[" + group_attr + ']["'  + attr + '"]'
+    update += ((" " * global_indentation) + "if not " + group_key + ":\n")
+    global_indentation += 2
+    update += ((" " * global_indentation) + group_key + " = " + attr.split(".")[1]  + "\n")
+    global_indentation -= 2 
+    update += ((" " * global_indentation) + "else:\n")
+    global_indentation += 2
+    update += ((" " * global_indentation) + group_key + " += " + attr.split(".")[1]  + "\n\n")
+    global_indentation -= 2
+
+  return update

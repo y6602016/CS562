@@ -1,10 +1,10 @@
 import psycopg2
 import collections
 from config import config
-from convertMFStructure import convertMFStructure
-from inputProcess import checkOperands, menu
-from outputProcess import writeMFStructure, writeFirstScan, writeProject, writeGroupVariableScan
-from groupVariableProcess import processRel
+from convertMFStructure import *
+from inputProcess import *
+from outputProcess import *
+from groupVariableProcess import *
 
 
 global_indentation = 2
@@ -33,7 +33,7 @@ def connect():
 
 
     # Open a file: file
-    file = open('query_input3.txt',mode='r')
+    file = open('query_input5.txt',mode='r')
     
     # read all lines at once
     input_file = file.read()
@@ -66,6 +66,13 @@ def connect():
       script += ("\n\n" + (" " * global_indentation) + "#1th Scan:\n")
       script = writeFirstScan(V, F, schema, script, global_indentation)
 
+      # process each grouping variables attributes
+      group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(S, N, V, C, G)
+
+      # process each grouping variable's 
+      # 1. aggregate function
+      # 2. dependency of other grouping variables
+      # 3. dependency of other grouping variables' fnction
       group_variable_fs, depend_map, depend_fun = processRel(N, C, F)
 
       # topological sorting preparation
@@ -91,7 +98,8 @@ def connect():
               queue.append(next_val)
         script += ("\n\n" + (" " * global_indentation) + f"#{scan_times + 1}th Scan:\n")
         scan_times += 1
-        script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, script, global_indentation)
+        script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, 
+          group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation)
       
       script = writeProject(S, script, global_indentation)
       

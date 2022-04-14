@@ -61,9 +61,9 @@ def writeFirstScan(V, F, schema, script, global_indentation):
     if f[0] == "avg":
       script += avgScript(group_attr, f, "0", global_indentation, None)
     elif f[0] == "max":
-      script += maxScript(group_attr, f, global_indentation, None)
+      script += maxScript(group_attr, f, None, global_indentation, None)
     elif f[0] == "min":
-      script += minScript(group_attr, f, global_indentation, None)
+      script += minScript(group_attr, f, None, global_indentation, None)
     elif f[0] == "count":
       script += countScript(group_attr, f, global_indentation, None)
     elif f[0] == "sum":
@@ -72,7 +72,8 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
   return script
 
-def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, script, global_indentation):
+def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, 
+  group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation):
   
   script += ((" " * global_indentation) + "cursor.execute(query)\n\n")
 
@@ -84,12 +85,11 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_f
 
   script += ((" " * global_indentation) + "for row in cursor:\n")
   global_indentation += 2
-
+  script += ((" " * global_indentation) + "#Grouping attributes:\n")
   group_attr = "(" + ", ".join(V) + ")"
 
   # single scan may process mutiple independent grouping variables
   for index, group_variable in enumerate(to_be_scan):
-
     if (index == 0):
       # extract grouping attributes (ex: cust, prod)
       for attr in V:
@@ -98,26 +98,34 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_f
     processed_condition, such_that_attr = processCondition(V, group_variable, C[group_variable - 1], group_attr, schema, depend_fun)
 
     # extract aggregated attributes and attr used in such that clause (ex: quant)
-    script += (f"\n\n" + (" " * global_indentation) + f"#Process Grouping Variable {group_variable}:\n")
+    # attrs can be from F, C, S
+
+    script += (f"\n" + (" " * global_indentation) + f"#Process Grouping Variable {group_variable}:\n")
     fun_attr_set = set(f[1] for f in group_variable_fs[group_variable])
     required_attr_set = fun_attr_set.union(set(such_that_attr))
+    required_attr_set = required_attr_set.union(set([attr.split(".")[1] for attr in group_variable_attrs[group_variable]]))
     for attr in required_attr_set:
       script += ((" " * global_indentation) + attr  + " = row[" + schema[attr] + "]\n")
 
     
-
-    for f in group_variable_fs[group_variable]:
-      if f[0] == "avg":
-        script += avgScript(group_attr, f, str(group_variable), global_indentation, processed_condition)
-      elif f[0] == "max":
-        script += maxScript(group_attr, f, str(group_variable), global_indentation, processed_condition)
-      elif f[0] == "min":
-        script += minScript(group_attr, f, str(group_variable), global_indentation, processed_condition)
-      elif f[0] == "count":
-        script += countScript(group_attr, f, str(group_variable), global_indentation, processed_condition)
-      elif f[0] == "sum":
-        script += sumScript(group_attr, f, str(group_variable), global_indentation, processed_condition)
-  
+    # if the grouping variable has no aggregation function, just apply the condition
+    if not group_variable_fs[group_variable]:
+      script += noAggregate(group_attr, group_variable_attrs[group_variable], global_indentation, processed_condition)
+    
+    # if it has aggregation functions, process them
+    else:
+      for f in group_variable_fs[group_variable]:
+        if f[0] == "avg":
+          script += avgScript(group_attr, f, str(group_variable), global_indentation, processed_condition)
+        elif f[0] == "max":
+          script += maxScript(group_attr, f, group_variable_attrs_max_aggregate[group_variable], global_indentation, processed_condition)
+        elif f[0] == "min":
+          script += minScript(group_attr, f, group_variable_attrs_min_aggregate[group_variable], global_indentation, processed_condition)
+        elif f[0] == "count":
+          script += countScript(group_attr, f, global_indentation, processed_condition)
+        elif f[0] == "sum":
+          script += sumScript(group_attr, f, global_indentation, processed_condition)
+    
   return script
 
 

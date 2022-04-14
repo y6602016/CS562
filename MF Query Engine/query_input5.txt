@@ -1,0 +1,12 @@
+SELECT ATTRIBUTE(S):
+cust, 1.quant, 1.state, 1.date
+NUMBER OF GROUPING VARIABLES(n):
+1
+GROUPING ATTRIBUTES(V):
+cust
+F-VECT([F]):
+0_max_quant, 1_max_quant
+SELECT CONDITION-VECT([σ]):
+1.cust == cust and 1.date > 96/05/31 and 1.date < 96/09/01
+HAVING_CONDITION(G):
+1_sum_quant * 3 > 0_sum_quant and 1.quant == 1_max_quant
