@@ -1,5 +1,5 @@
 from aggregateProcess import *
-from groupVariableProcess import processCondition
+from groupVariableProcess import *
 
 def writeMFStructure(mf_structure, script, global_indentation):
   script += ((" " * global_indentation) + "mf_structure = ")
@@ -14,7 +14,7 @@ def writeGroupAttrIndex(V, schema, script, global_indentation):
   script += ((" " * global_indentation) + "group_attr_index = ")
   group_attr_index = list()
   for i, attr in enumerate(schema):
-    if attr in V:
+    if attr[0] in V:
       group_attr_index.append(i)
   script += (str(group_attr_index) + "\n\n")
   return script, group_attr_index
@@ -42,12 +42,12 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
   # extract grouping attributes (ex: cust, prod)
   for attr in V:
-    script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
+    script += ((" " * global_indentation) + attr + " = row[" + schema[attr][0] + "]\n")
 
   # extract aggregated attributes (ex: quant)
   fun_attr_set = set(f[1] for f in F0)
   for attr in fun_attr_set:
-    script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
+    script += ((" " * global_indentation) + attr + " = row[" + schema[attr][0] + "]\n")
 
   # first filling the grouping attributes, this process only works in first scan
   group_key = "group[" + group_attr + "]"
@@ -94,10 +94,10 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_f
     if (index == 0):
       # extract grouping attributes (ex: cust, prod)
       for attr in V:
-        script += ((" " * global_indentation) + attr + " = row[" + schema[attr] + "]\n")
+        script += ((" " * global_indentation) + attr + " = row[" + schema[attr][0] + "]\n")
 
-    processed_condition, such_that_attr = processCondition(V, group_variable, C[group_variable - 1], group_attr, schema, depend_fun)
-
+    processed_condition, such_that_attr = processCondition(V, C[group_variable - 1], group_attr, schema)
+    
     # extract aggregated attributes and attr used in such that clause (ex: quant)
     # attrs can be from F, C, S
 
@@ -106,7 +106,7 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_f
     required_attr_set = fun_attr_set.union(set(such_that_attr))
     required_attr_set = required_attr_set.union(set([attr.split(".")[1] for attr in group_variable_attrs[group_variable]]))
     for attr in required_attr_set:
-      script += ((" " * global_indentation) + attr  + " = row[" + schema[attr] + "]\n")
+      script += ((" " * global_indentation) + attr  + " = row[" + schema[attr][0] + "]\n")
 
     
     # if the grouping variable has no aggregation function, just apply the condition

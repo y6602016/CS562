@@ -5,6 +5,7 @@ from convertMFStructure import *
 from inputProcess import *
 from outputProcess import *
 from groupVariableProcess import *
+from schemaProcess import *
 
 
 global_indentation = 2
@@ -43,9 +44,7 @@ def connect():
 
     operands = checkOperands(input_file)
 
-    query = "select column_name from information_schema.columns where table_name = 'sales' order by ordinal_position"
-    cur.execute(query)
-    schema = {attr[0] : str(i) for i, attr in enumerate(cur.fetchall())}
+    schema = processSchema(cur)
 
     if not operands:
       print("Input values are not valid")
@@ -62,19 +61,25 @@ def connect():
       
       script = writeMFStructure(mf_structure, script, global_indentation)
 
-      # initial scan
-      script += ("\n\n" + (" " * global_indentation) + "#1th Scan:\n")
-      script = writeFirstScan(V, F, schema, script, global_indentation)
-
-      # process each grouping variables attributes
+      # ==============
+      # Analyze the related columns of grouping variables that need to be updated in a scan
+      # We divide the related columns to rel attributes and rel aggregate functions
+      # 1. Process each grouping variables rel attributes
       group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(S, N, V, C, G)
 
-      # process each grouping variable's 
+      # 1. Process each grouping variables rel aggregate functions
       # 1. aggregate function
       # 2. dependency of other grouping variables
       # 3. dependency of other grouping variables' fnction
       group_variable_fs, depend_map, depend_fun = processRel(N, C, F)
+      # ==============
 
+      
+      # initial scan
+      script += ("\n\n" + (" " * global_indentation) + "#1th Scan:\n")
+      script = writeFirstScan(V, F, schema, script, global_indentation)
+
+      # remaining scan
       # topological sorting preparation
       edges = collections.defaultdict(list)   
       in_degrees = [0] * (int(N[0]) + 1)

@@ -1,6 +1,7 @@
 import psycopg2
 import collections
 from config import config
+from datetime import date as dt
 
 def query():
   params = config()
@@ -39,17 +40,17 @@ def query():
     quant = row[6]
     date = row[7]
     state = row[5]
-    if group[(cust)]["cust"] == cust and date > 2019-05-31 and date < 2019-09-01:
+    if group[(cust)]["cust"] == cust and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
       if not group[(cust)]["1_max_quant"]:
         group[(cust)]["1_max_quant"] = quant
+        group[(cust)]["1.state"] = state
         group[(cust)]["1.date"] = date
         group[(cust)]["1.quant"] = quant
-        group[(cust)]["1.state"] = state
       else:
         group[(cust)]["1_max_quant"] = max(quant, group[(cust)]["1_max_quant"])
+        group[(cust)]["1.state"] = state
         group[(cust)]["1.date"] = date
         group[(cust)]["1.quant"] = quant
-        group[(cust)]["1.state"] = state
 
 
   for val in group.values():

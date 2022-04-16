@@ -1,4 +1,5 @@
 import collections
+from datetime import date
 
 def processRel(N, C, F):
   group_variable_fs = collections.defaultdict(list)
@@ -37,41 +38,31 @@ def processRel(N, C, F):
   return group_variable_fs, depend_map, depend_fun
 
 
-def processCondition(V, group_variable, condition, group_attr, schema, depend_fun):
-  # If the attribute is grouping attribute:
-  # replace all ("grouping varable" + ".") with (group[(grouping attribute)][")
-  # If the attribute is not a grouping attribute:
-  # remove ("grouping varable" + ".")
-  # ex: 1.cust==cust and 1.state=="NY"  ->  group[(cust, prod)]["cust==cust and state=="NY"
-
+def processCondition(V, condition, group_attr, schema):
   new_processed = []
   such_that_attr = []
-  i = 0
+  splitted = condition.split(" ")
+  special_type_index = -1
+  for i, word in enumerate(splitted):
+    if "." in word:
+      attr = word.split(".")[1]
+      if attr in V:
+        new_processed.append(f'group[{group_attr}]["' + attr + '"]')
+      elif attr in schema:
+        such_that_attr.append(attr)
+        new_processed.append(attr)
+        if schema[attr][1] == 'date':
+          special_type_index = i
+    elif "_" in word:
+      new_processed.append(f'group[{group_attr}]["' + word + '"]')
+    else:
+      if special_type_index > -1 and i == special_type_index + 2:
+        new_processed.append(f'dt.fromisoformat("' + word + '")')
+      else:
+        new_processed.append(word)
 
-  while i < len(condition):
-    if condition[i] == str(group_variable) and i + 1 < len(condition) and condition[i + 1] == ".":
-      j = i + 2
-      while j < len(condition) and condition[j].isalpha():
-        j += 1
-      i += 2
-      word = condition[i:j]
-      # word is a grouping attribute
-      if word in V:
-        new_processed.append(f'group[{group_attr}]["')
-      elif word in schema:
-        such_that_attr.append(word)
-    new_processed.append(condition[i])
-    i += 1
-
-  processed = "".join(new_processed)
-
-  # second, fill "] at the end of grouping attribute and depending aggregation functions
-  for attr in V:
-    processed = processed.replace(f'["{str(attr)}', f'["{str(attr)}"]')
-  
-  for fun in depend_fun[group_variable]:
-    processed = processed.replace(fun, f'group[{group_attr}]["{fun}"]')
-
+  print(date.fromisoformat('2019-12-03') < date.fromisoformat('2019-12-04'))
+  processed = " ".join(new_processed)
   return processed, such_that_attr
 
 
