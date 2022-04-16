@@ -38,7 +38,9 @@ def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_inden
   global_indentation -= 2 
   max += ((" " * global_indentation) + "else:\n")
   global_indentation += 2
-  max += ((" " * global_indentation) + group_key + " = max(" + func[1]  + ", " + group_key + ")\n")
+  max += ((" " * global_indentation) + "if " + func[1] + " > " + group_key + ":\n")
+  global_indentation += 2
+  max += ((" " * global_indentation) + group_key + " = " + func[1] + "\n")
   if group_variable_attrs_max_aggregate:
     for attr in group_variable_attrs_max_aggregate:
       group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'
@@ -64,7 +66,9 @@ def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_inden
   global_indentation -= 2 
   min += ((" " * global_indentation) + "else:\n")
   global_indentation += 2
-  min += ((" " * global_indentation) + group_key + " = min(" + func[1]  + ", " + group_key + ")\n")
+  min += ((" " * global_indentation) + "if " + func[1] + " < " + group_key + ":\n")
+  global_indentation += 2
+  min += ((" " * global_indentation) + group_key + " = " + func[1] + "\n")
   if group_variable_attrs_min_aggregate:
     for attr in group_variable_attrs_min_aggregate:
       group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'

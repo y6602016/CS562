@@ -11,7 +11,7 @@ def query():
   query = 'select * from sales'
   cursor.execute(query)
   
-  mf_structure = {'cust': None, '1.quant': None, '1.state': None, '1.date': None, '0_max_quant': None, '1_max_quant': None}
+  mf_structure = {'cust': None, '1.quant': None, '1.state': None, '1.date': None, '0_max_quant': None}
   group = collections.defaultdict(lambda: dict(mf_structure))
 
 
@@ -26,7 +26,8 @@ def query():
     if not group[(cust)]["0_max_quant"]:
       group[(cust)]["0_max_quant"] = quant
     else:
-      group[(cust)]["0_max_quant"] = max(quant, group[(cust)]["0_max_quant"])
+      if quant > group[(cust)]["0_max_quant"]:
+        group[(cust)]["0_max_quant"] = quant
 
 
   #2th Scan:
@@ -37,20 +38,13 @@ def query():
     cust = row[0]
 
     #Process Grouping Variable 1:
-    quant = row[6]
-    date = row[7]
     state = row[5]
-    if group[(cust)]["cust"] == cust and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
-      if not group[(cust)]["1_max_quant"]:
-        group[(cust)]["1_max_quant"] = quant
-        group[(cust)]["1.state"] = state
-        group[(cust)]["1.date"] = date
-        group[(cust)]["1.quant"] = quant
-      else:
-        group[(cust)]["1_max_quant"] = max(quant, group[(cust)]["1_max_quant"])
-        group[(cust)]["1.state"] = state
-        group[(cust)]["1.date"] = date
-        group[(cust)]["1.quant"] = quant
+    date = row[7]
+    quant = row[6]
+    if group[(cust)]["cust"] == cust and quant == group[(cust)]["0_max_quant"]:
+      group[(cust)]["1.quant"] = quant
+      group[(cust)]["1.state"] = state
+      group[(cust)]["1.date"] = date
 
 
   for val in group.values():

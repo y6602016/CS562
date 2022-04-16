@@ -131,9 +131,15 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_f
 
 
 
-def writeProject(S, script, global_indentation):
+def writeProject(S, G, schema, script, global_indentation):
   script += ("\n\n" + (" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2
+  
+  if G[0]:
+    having = processHaving(G[0], schema)
+    script += ((" " * global_indentation) + "if " + having + ":\n")
+    global_indentation += 2
+
   all_output_attr = ""
   for i, s in enumerate(S):
     if i != len(S):

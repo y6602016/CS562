@@ -58,12 +58,34 @@ def processCondition(V, condition, group_attr, schema):
     else:
       if special_type_index > -1 and i == special_type_index + 2:
         new_processed.append(f'dt.fromisoformat("' + word + '")')
+        special_type_index = -1
       else:
         new_processed.append(word)
 
-  print(date.fromisoformat('2019-12-03') < date.fromisoformat('2019-12-04'))
   processed = " ".join(new_processed)
   return processed, such_that_attr
+
+def processHaving(having, schema):
+  new_processed = []
+  splitted = having.split(" ")
+  special_type_index = -1
+  for i, word in enumerate(splitted):
+    if "." in word:
+      new_processed.append(f'val["' + word + '"]')
+      attr = word.split(".")[1]
+      if schema[attr][1] == 'date':
+        special_type_index = i
+    elif "_" in word:
+      new_processed.append(f'val["' + word + '"]')
+    else:
+      if special_type_index > -1 and i == special_type_index + 2:
+        new_processed.append(f'dt.fromisoformat("' + word + '")')
+        special_type_index = -1
+      else:
+        new_processed.append(word)
+
+  processed = " ".join(new_processed)
+  return processed
 
 
 def processAttr(S, N, V, C, G):

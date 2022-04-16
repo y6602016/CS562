@@ -34,7 +34,7 @@ def connect():
 
 
     # Open a file: file
-    file = open('query_input5.txt',mode='r')
+    file = open('query_input4.txt',mode='r')
     
     # read all lines at once
     input_file = file.read()
@@ -106,7 +106,7 @@ def connect():
         script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, 
           group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation)
       
-      script = writeProject(S, script, global_indentation)
+      script = writeProject(S, G, schema, script, global_indentation)
       
 
     
