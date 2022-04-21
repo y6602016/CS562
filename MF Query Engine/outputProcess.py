@@ -146,27 +146,27 @@ def writeProject(S, G, mf_structure, schema, script, global_indentation):
   type_formater = ((" " * global_indentation) + 'row_formatter = []\n')
   type_formater += ((" " * global_indentation) + 'title_formatter = []\n')
   type_formater += ((" " * global_indentation) + 'date_index = []\n')
-  type_formater += ((" " * global_indentation) + "for t in columns_type:\n")
+  type_formater += ((" " * global_indentation) + "for i, t in enumerate(columns_type):\n")
   global_indentation += 2
   type_formater += ((" " * global_indentation) + "if t == str or t == dt:\n")
   global_indentation += 2
-  type_formater += ((" " * global_indentation) + 'row_formatter.append("{:<15}")\n')
+  type_formater += ((" " * global_indentation) + 'row_formatter.append("{col" +str(i + 1) + ":<15}")\n')
   type_formater += ((" " * global_indentation) + 'title_formatter.append("{:<15}")\n')
   global_indentation -= 2
   type_formater += ((" " * global_indentation) + "elif t == float:\n")
   global_indentation += 2
-  type_formater += ((" " * global_indentation) + 'row_formatter.append("{:>15,.2f}")\n')
-  type_formater += ((" " * global_indentation) + 'title_formatter.append("{:>15}")\n')
+  type_formater += ((" " * global_indentation) + 'row_formatter.append("{col" +str(i + 1) + ":>15,.2f}")\n')
+  type_formater += ((" " * global_indentation) + 'title_formatter.append("{:<15}")\n')
   global_indentation -= 2
   type_formater += ((" " * global_indentation) + "else:\n")
   global_indentation += 2
-  type_formater += ((" " * global_indentation) + 'row_formatter.append("{:>15}")\n')
-  type_formater += ((" " * global_indentation) + 'title_formatter.append("{:>15}")\n')
+  type_formater += ((" " * global_indentation) + 'row_formatter.append("{col" +str(i + 1) + ":>15}")\n')
+  type_formater += ((" " * global_indentation) + 'title_formatter.append("{:<15}")\n')
   global_indentation -= 2
   global_indentation -= 2
 
-  type_formater += ((" " * global_indentation) + 'title_formatter = " ".join(title_formatter)\n')
-  type_formater += ((" " * global_indentation) + 'row_formatter = " ".join(row_formatter)\n')
+  type_formater += ((" " * global_indentation) + 'title_formatter = "|".join(title_formatter)\n')
+  type_formater += ((" " * global_indentation) + 'row_formatter = "|".join(row_formatter)\n')
 
   script += type_formater
 
@@ -179,6 +179,7 @@ def writeProject(S, G, mf_structure, schema, script, global_indentation):
       title += '"' + s + '", '
   script += ((" " * global_indentation) + title + "\n")
 
+  script += ((" " * global_indentation) + "formater = Formatter()\n")
   script += ((" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2
   
@@ -187,7 +188,7 @@ def writeProject(S, G, mf_structure, schema, script, global_indentation):
     script += ((" " * global_indentation) + "if " + having + ":\n")
     global_indentation += 2
 
-  all_output_attr = "print(row_formatter.format("
+  all_output_attr = "data = {"
   is_date = False
   for i, s in enumerate(S):
     if "." in s:
@@ -201,16 +202,19 @@ def writeProject(S, G, mf_structure, schema, script, global_indentation):
 
     if i != len(S) - 1:
       if is_date:
-        all_output_attr += 'str(val["' + s + '"]), '
+        all_output_attr += ('"col' + str(i + 1) + '": ' + 'str(val["' + s + '"]), ')
         is_date = False
       else:
-        all_output_attr += 'val["' + s + '"], '
+        all_output_attr += ('"col' + str(i + 1) + '": ' + 'val["' + s + '"], ')
     else:
       if is_date:
-        all_output_attr += 'str(val["' + s + '"])'
+        all_output_attr += ('"col' + str(i + 1) + '": ' + 'str(val["' + s + '"])}')
         is_date = False
       else:
-        all_output_attr += 'val["' + s + '"]'
-  script += ((" " * global_indentation) + all_output_attr + "))\n\n")
+        all_output_attr += ('"col' + str(i + 1) + '": ' + 'val["' + s + '"]}')
+
+  all_output_attr += ("\n" + (" " * global_indentation) + "print(formater.format(row_formatter, **data))\n")
+
+  script += ((" " * global_indentation) + all_output_attr + "\n\n")
 
   return script

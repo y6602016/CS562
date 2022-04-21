@@ -57,13 +57,16 @@ def menu():
           break
         else:
           inputs.append(value)
-      conditions = ",\n".join(inputs)
+      conditions = ", ".join(inputs)
       file.write(conditions + "\n")
       inputs = []
 
       file.write("HAVING_CONDITION(G):\n")
       G = input("Please enter the having clause.\nEx: 1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant\n")
-      file.write(G + "\n")
+      if value == "-1":
+          break
+      else:
+        file.write(G + "\n")
 
       valid_select = True
     else:
