@@ -188,7 +188,7 @@ def writeProject(S, G, mf_structure, schema, script, global_indentation):
   script += ((" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2
 
-  if len(G):
+  if len(G) and len(G[0]):
     having = processHaving(G[0], schema)
     script += ((" " * global_indentation) + "if " + having + ":\n")
     global_indentation += 2
