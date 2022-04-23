@@ -29,20 +29,21 @@ def writeFirstScan(V, F, schema, script, global_indentation):
     if splitted[0] == "0":
       F0.append((splitted[1], splitted[2], f))
   
-  group_attr = "(" + ", ".join(V) + ")"
+  key_V = ["key_" + group_attr for group_attr in V]
+  group_attr = "(" + ", ".join(key_V) + ")"
 
 
   for f in F0:
     if "avg" in f[0]:
       script += ((" " * global_indentation) + "count_0_" +  f[1] + "= collections.defaultdict(int)\n")
   
-  script += ((" " * global_indentation) + "for row in cursor:\n")
+  script += ((" " * global_indentation) + "for row in rows:\n")
   global_indentation += 2
   script += ((" " * global_indentation) + "#Grouping attributes:\n")
 
   # extract grouping attributes (ex: cust, prod)
   for attr in V:
-    script += ((" " * global_indentation) + attr + " = row[" + schema[attr][0] + "]\n")
+    script += ((" " * global_indentation) + "key_" + attr + " = row[" + schema[attr][0] + "]\n")
 
   # extract aggregated attributes (ex: quant)
   fun_attr_set = set(f[1] for f in F0)
@@ -54,7 +55,7 @@ def writeFirstScan(V, F, schema, script, global_indentation):
   script += ((" " * global_indentation) + "if not " + group_key + '["' + V[0] + '"]:\n')
   global_indentation += 2
   for v in V:
-    script += ((" " * global_indentation) + group_key + '["' + v + '"]' + " = " + v + "\n")
+    script += ((" " * global_indentation) + group_key + '["' + v + '"]' + " = key_" + v + "\n")
   global_indentation -= 2
 
 
@@ -75,19 +76,24 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
 def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, 
   group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation):
-  
-  script += ((" " * global_indentation) + "cursor.execute(query)\n\n")
+
+  key_V = ["key_" + group_attr for group_attr in V]
+  group_attr = "(" + ", ".join(key_V) + ")"
 
   # check avg
   for group_variable in to_be_scan:
     for f in group_variable_fs[group_variable]:
       if "avg" in f[0]:
         script += ((" " * global_indentation) + "count_" + str(group_variable) + "_" + f[1] + "= collections.defaultdict(int)\n")
+  
+  
 
-  script += ((" " * global_indentation) + "for row in cursor:\n")
+  script += ((" " * global_indentation) + "for " + group_attr + " in group:\n")
+  global_indentation += 2
+  script += ((" " * global_indentation) + "for row in rows:\n")
   global_indentation += 2
   script += ((" " * global_indentation) + "#Grouping attributes:\n")
-  group_attr = "(" + ", ".join(V) + ")"
+  
 
   # single scan may process mutiple independent grouping variables
   for index, group_variable in enumerate(to_be_scan):
@@ -100,7 +106,7 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_f
     
     # extract aggregated attributes and attr used in such that clause (ex: quant)
     # attrs can be from F, C, S
-
+    
     script += (f"\n" + (" " * global_indentation) + f"#Process Grouping Variable {group_variable}:\n")
     fun_attr_set = set(f[1] for f in group_variable_fs[group_variable])
     required_attr_set = fun_attr_set.union(set(such_that_attr))

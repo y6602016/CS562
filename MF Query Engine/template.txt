@@ -33,4 +33,5 @@ def query():
 
   query = 'select * from sales'
   cursor.execute(query)
+  rows = cursor.fetchall()
   

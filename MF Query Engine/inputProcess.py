@@ -5,7 +5,7 @@ def menu():
     if value == "1":
       valid_select = True
     elif value == "2":
-      file = open('query_input2.txt',mode='w')
+      file = open('query_input.txt',mode='w')
 
       file.write("SELECT ATTRIBUTE(S):\n")
       inputs = []
@@ -52,7 +52,7 @@ def menu():
 
       file.write("SELECT CONDITION-VECT([σ]):\n")
       while 1:
-        value = input("Please enter an condition to define grouping variable.\n1.cust = cust and 1.state=’NY’\nEnter -1 to end\n")
+        value = input("Please enter an condition to define grouping variable.\nEx: 1.cust == cust and 1.state== ’NY’\nPlease MUST put a space between all operators\nEnter -1 to end\n")
         if value == "-1":
           break
         else:

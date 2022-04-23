@@ -33,63 +33,80 @@ def query():
 
   query = 'select * from sales'
   cursor.execute(query)
+  rows = cursor.fetchall()
   
-  mf_structure = {'cust': None, '1.quant': None, '1.state': None, '1.date': None, '0_sum_quant': None, '1_min_quant': None, '1_sum_quant': None}
+  mf_structure = {'cust': None, '1_sum_quant': None, '2_sum_quant': None, '3_sum_quant': None, '1_avg_quant': None, '3_avg_quant': None}
   group = collections.defaultdict(lambda: dict(mf_structure))
 
 
 
   #1th Scan:
-  for row in cursor:
+  for row in rows:
     #Grouping attributes:
-    cust = row[0]
-    quant = row[6]
-    if not group[(cust)]["cust"]:
-      group[(cust)]["cust"] = cust
-    if not group[(cust)]["0_sum_quant"]:
-      group[(cust)]["0_sum_quant"] = quant
-    else:
-      group[(cust)]["0_sum_quant"] += quant
-
+    key_cust = row[0]
+    if not group[(key_cust)]["cust"]:
+      group[(key_cust)]["cust"] = key_cust
 
 
   #2th Scan:
-  cursor.execute(query)
+  count_1_quant= collections.defaultdict(int)
+  count_3_quant= collections.defaultdict(int)
+  for (key_cust) in group:
+    for row in rows:
+      #Grouping attributes:
+      cust = row[0]
 
-  for row in cursor:
-    #Grouping attributes:
-    cust = row[0]
+      #Process Grouping Variable 1:
+      quant = row[6]
+      state = row[5]
+      if group[(key_cust)]["cust"] == cust and state == "NY":
+        if not group[(key_cust)]["1_sum_quant"]:
+          group[(key_cust)]["1_sum_quant"] = quant
+        else:
+          group[(key_cust)]["1_sum_quant"] += quant
 
-    #Process Grouping Variable 1:
-    date = row[7]
-    state = row[5]
-    quant = row[6]
-    if group[(cust)]["cust"] == cust and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
-      if not group[(cust)]["1_min_quant"]:
-        group[(cust)]["1_min_quant"] = quant
-        group[(cust)]["1.date"] = date
-        group[(cust)]["1.state"] = state
-        group[(cust)]["1.quant"] = quant
-      else:
-        if quant < group[(cust)]["1_min_quant"]:
-          group[(cust)]["1_min_quant"] = quant
-          group[(cust)]["1.date"] = date
-          group[(cust)]["1.state"] = state
-          group[(cust)]["1.quant"] = quant
-    if group[(cust)]["cust"] == cust and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
-      if not group[(cust)]["1_sum_quant"]:
-        group[(cust)]["1_sum_quant"] = quant
-      else:
-        group[(cust)]["1_sum_quant"] += quant
+      if group[(key_cust)]["cust"] == cust and state == "NY":
+        if not group[(key_cust)]["1_avg_quant"]:
+          group[(key_cust)]["1_avg_quant"] = quant
+          count_1_quant[(key_cust)] += 1
+        else:
+          count_1_quant[(key_cust)] += 1
+          group[(key_cust)]["1_avg_quant"] += ((quant - group[(key_cust)]["1_avg_quant"])/count_1_quant[(key_cust)])
 
+      #Process Grouping Variable 2:
+      quant = row[6]
+      state = row[5]
+      if group[(key_cust)]["cust"] == cust and state == "NJ":
+        if not group[(key_cust)]["2_sum_quant"]:
+          group[(key_cust)]["2_sum_quant"] = quant
+        else:
+          group[(key_cust)]["2_sum_quant"] += quant
+
+
+      #Process Grouping Variable 3:
+      quant = row[6]
+      state = row[5]
+      if group[(key_cust)]["cust"] == cust and state == "CT":
+        if not group[(key_cust)]["3_sum_quant"]:
+          group[(key_cust)]["3_sum_quant"] = quant
+        else:
+          group[(key_cust)]["3_sum_quant"] += quant
+
+      if group[(key_cust)]["cust"] == cust and state == "CT":
+        if not group[(key_cust)]["3_avg_quant"]:
+          group[(key_cust)]["3_avg_quant"] = quant
+          count_3_quant[(key_cust)] += 1
+        else:
+          count_3_quant[(key_cust)] += 1
+          group[(key_cust)]["3_avg_quant"] += ((quant - group[(key_cust)]["3_avg_quant"])/count_3_quant[(key_cust)])
 
 
   columns_type = []
   for val in group.values():
     columns_type.append(type(val["cust"]))
-    columns_type.append(type(val["1.quant"]))
-    columns_type.append(type(val["1.state"]))
-    columns_type.append(type(val["1.date"]))
+    columns_type.append(type(val["1_sum_quant"]))
+    columns_type.append(type(val["2_sum_quant"]))
+    columns_type.append(type(val["3_sum_quant"]))
     break
 
   row_formatter = []
@@ -107,13 +124,12 @@ def query():
       title_formatter.append("{:<15}")
   title_formatter = "|".join(title_formatter)
   row_formatter = "|".join(row_formatter)
-  print(title_formatter.format("cust", "1.quant", "1.state", "1.date"))
+  print(title_formatter.format("cust", "1_sum_quant", "2_sum_quant", "3_sum_quant"))
 
   formater = Formatter()
   for val in group.values():
-    if val["1_sum_quant"] * 30 > val["0_sum_quant"] and val["1.quant"] == val["1_min_quant"] and val["1.date"] > dt.fromisoformat("2019-06-06"):
-      data = {"col1": val["cust"], "col2": val["1.quant"], "col3": val["1.state"], "col4": str(val["1.date"])}
-      print(formater.format(row_formatter, **data))
+    data = {"col1": val["cust"], "col2": val["1_sum_quant"], "col3": val["2_sum_quant"], "col4": val["3_sum_quant"]}
+    print(formater.format(row_formatter, **data))
 
 
 if __name__ == "__main__":
