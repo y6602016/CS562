@@ -176,7 +176,6 @@ def writeProject(S, G, mf_structure, schema, script, global_indentation):
 
   script += type_formater
 
-
   title = "print(title_formatter.format("
   for i, s in enumerate(S):
     if i == len(S) - 1:
@@ -188,8 +187,8 @@ def writeProject(S, G, mf_structure, schema, script, global_indentation):
   script += ((" " * global_indentation) + "formater = Formatter()\n")
   script += ((" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2
-  
-  if G[0]:
+
+  if len(G):
     having = processHaving(G[0], schema)
     script += ((" " * global_indentation) + "if " + having + ":\n")
     global_indentation += 2
