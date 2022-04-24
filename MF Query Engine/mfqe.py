@@ -60,13 +60,13 @@ def connect():
       mf_structure = convertMFStructure(operands, cur)
       
       script = writeMFStructure(mf_structure, script, global_indentation)
-
+      
       # ==============
       # Analyze the related columns of grouping variables that need to be updated in a scan
       # We divide the related columns to rel attributes and rel aggregate functions
       # 1. Process each grouping variables rel attributes
       group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(S, N, V, C, G)
-
+      
       # 1. Process each grouping variables rel aggregate functions
       # 1. aggregate function
       # 2. dependency of other grouping variables
@@ -78,7 +78,7 @@ def connect():
       # initial scan
       script += ("\n\n" + (" " * global_indentation) + "#1th Scan:\n")
       script = writeFirstScan(V, F, schema, script, global_indentation)
-
+      
       # remaining scan
       # topological sorting preparation
       edges = collections.defaultdict(list)   

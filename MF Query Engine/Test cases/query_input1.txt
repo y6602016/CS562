@@ -1,0 +1,37 @@
+SELECT ATTRIBUTE(S):
+cust, 1_avg_quant, 2_avg_quant, 3_avg_quant
+NUMBER OF GROUPING VARIABLES(n):
+3
+GROUPING ATTRIBUTES(V):
+cust
+F-VECT([F]):
+1_avg_quant, 2_avg_quant, 3_avg_quant
+SELECT CONDITION-VECT([σ]):
+1.cust == cust and 1.state == "NY", 2.cust == cust and 2.state == "NJ", 3.cust == cust and 3.state == "CT"
+HAVING_CONDITION(G):
+
+
+
+<Standard SQL>
+
+with t1 as(
+	select cust, avg(quant) t1_avg
+	from sales
+	where state = 'NY'
+	group by cust
+), 
+t2 as(
+	select cust, avg(quant) t2_avg
+	from sales
+	where state = 'NJ'
+	group by cust
+),
+t3 as(
+	select cust, avg(quant) t3_avg
+	from sales
+	where state = 'CT'
+	group by cust
+)
+select t1.cust, t1.t1_avg, t2.t2_avg, t3.t3_avg
+from t1, t2, t3
+where t1.cust = t2.cust and t1.cust = t3.cust

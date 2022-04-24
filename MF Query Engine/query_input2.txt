@@ -8,4 +8,4 @@ F-VECT([F]):
 0_avg_quant, 1_avg_quant, 2_avg_quant
 SELECT CONDITION-VECT([σ]):
 1.cust == cust and 1.prod == prod and 1.year == 2018 and 1.quant > 0_avg_quant, 2.cust == cust and 2.prod == prod and 2.year == 2019 and 2.quant > 1_avg_quant
-HAVING_CONDITION(G):
+HAVING_CONDITmmvhION(G):

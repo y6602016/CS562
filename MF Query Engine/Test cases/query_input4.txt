@@ -1,0 +1,25 @@
+SELECT ATTRIBUTE(S):
+cust, prod, 1.quant, 1.state, 1.date
+NUMBER OF GROUPING VARIABLES(n):
+1
+GROUPING ATTRIBUTES(V):
+cust, prod
+F-VECT([F]):
+0_max_quant
+SELECT CONDITION-VECT([σ]):
+1.cust == cust and 1.prod == prod and 1.quant == 0_max_quant
+HAVING_CONDITION(G):
+
+
+
+<Standard SQL>
+/* assume the Max value is unique */
+
+with t1 as(
+	select cust, prod, max(quant) t1_max
+	from sales
+	group by cust, prod
+)
+select s.cust, s.prod, s.quant, s.state, s.date
+from sales s, t1
+where s.cust = t1.cust and s.prod = t1.prod and s.quant = t1.t1_max

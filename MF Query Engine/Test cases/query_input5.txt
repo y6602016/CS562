@@ -1,0 +1,44 @@
+SELECT ATTRIBUTE(S):
+cust, prod, 1.quant, 1.state, 1.date
+NUMBER OF GROUPING VARIABLES(n):
+1
+GROUPING ATTRIBUTES(V):
+cust, prod
+F-VECT([F]):
+0_sum_quant, 1_min_quant, 1_sum_quant
+SELECT CONDITION-VECT([σ]):
+1.cust == cust and 1.prod == prod and 1.date > 2019-05-31 and 1.date < 2019-09-01
+HAVING_CONDITION(G):
+1_sum_quant * 30 > 0_sum_quant and 1.quant == 1_min_quant and 1_min_quant > 270
+
+
+
+<Standard SQL>
+/* assume the Min value is unique */
+
+with t1 as(
+	select cust, prod, sum(quant) t1_sum
+	from sales
+	group by cust, prod
+), 
+t2 as(
+	select *
+	from sales
+	where date > '2019-05-31' and date < '2019-09-01'
+),
+t3 as(
+	select cust, prod, min(quant) t3_min, sum(quant) t3_sum 
+	from t2
+	group by cust, prod
+)
+select t1.cust, t1.prod, t2.quant, t2.state, t2.date
+from t1, t2, t3
+where t1.cust = t2.cust and t1.prod = t2.prod and t1.cust = t3.cust and t1.prod = t3.prod
+and t3.t3_sum * 30 > t1.t1_sum and t3.t3_min > 270 and t3.t3_min = t2.quant 
+
+
+
+
+
+
+

@@ -134,7 +134,7 @@ def processAttr(S, N, V, C, G):
 
   for grout_attr in V:
     project_set.remove(grout_attr)
-
+  
   for i in range(1, int(N[0]) + 1):
     attr_list = []
     prefix = str(i) + "."
@@ -146,7 +146,7 @@ def processAttr(S, N, V, C, G):
     
     for attr in attr_list:
       project_set.remove(attr)
-      
+    
     # check gv in C or not
     c = C[i - 1]
     for attr in attr_list:
