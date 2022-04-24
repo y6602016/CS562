@@ -44,23 +44,38 @@ def processCondition(V, condition, group_attr, schema):
   splitted = condition.split(" ")
   special_type_index = -1
   for i, word in enumerate(splitted):
+    temp_word = word
+    word = word.replace("(", "")
+    word = word.replace(")", "")
+
+    processed = ""
     if "." in word:
       attr = word.split(".")[1]
       if attr in V:
-        new_processed.append(f'group[{group_attr}]["' + attr + '"]')
+        processed = f'group[{group_attr}]["' + attr + '"]'
       elif attr in schema:
         such_that_attr.append(attr)
-        new_processed.append(attr)
+        processed = attr
         if schema[attr][1] == 'date':
           special_type_index = i
     elif "_" in word:
-      new_processed.append(f'group[{group_attr}]["' + word + '"]')
+      processed = f'group[{group_attr}]["' + word + '"]'
     else:
       if special_type_index > -1 and i == special_type_index + 2:
-        new_processed.append(f'dt.fromisoformat("' + word + '")')
+        processed = f'dt.fromisoformat("' + word + '")'
         special_type_index = -1
       else:
-        new_processed.append(word)
+        processed = word
+
+    
+    for char in temp_word:
+      if char == "(":
+        processed = "(" + processed
+        
+      if char == ")":
+        processed = processed + ")"
+
+    new_processed.append(processed)
 
   processed = " ".join(new_processed)
   return processed, such_that_attr
@@ -70,19 +85,33 @@ def processHaving(having, schema):
   splitted = having.split(" ")
   special_type_index = -1
   for i, word in enumerate(splitted):
+    temp_word = word
+    word = word.replace("(", "")
+    word = word.replace(")", "")
+
+    processed = ""
     if "." in word:
-      new_processed.append(f'val["' + word + '"]')
+      processed = f'val["' + word + '"]'
       attr = word.split(".")[1]
       if schema[attr][1] == 'date':
         special_type_index = i
     elif "_" in word:
-      new_processed.append(f'val["' + word + '"]')
+      processed = f'val["' + word + '"]'
     else:
       if special_type_index > -1 and i == special_type_index + 2:
-        new_processed.append(f'dt.fromisoformat("' + word + '")')
+        processed = f'dt.fromisoformat("' + word + '")'
         special_type_index = -1
       else:
-        new_processed.append(word)
+        processed = word
+
+    for char in temp_word:
+      if char == "(":
+        processed = "(" + processed
+        
+      if char == ")":
+        processed = processed + ")"
+
+    new_processed.append(processed)
 
   processed = " ".join(new_processed)
   return processed

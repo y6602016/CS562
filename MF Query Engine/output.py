@@ -62,19 +62,19 @@ def query():
 
       #Process Grouping Variable 1:
       state = row[5]
-      date = row[7]
       quant = row[6]
+      date = row[7]
       if group[(key_cust)]["cust"] == cust and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
         if not group[(key_cust)]["1_min_quant"]:
           group[(key_cust)]["1_min_quant"] = quant
-          group[(key_cust)]["1.date"] = date
           group[(key_cust)]["1.quant"] = quant
+          group[(key_cust)]["1.date"] = date
           group[(key_cust)]["1.state"] = state
         else:
           if quant < group[(key_cust)]["1_min_quant"]:
             group[(key_cust)]["1_min_quant"] = quant
-            group[(key_cust)]["1.date"] = date
             group[(key_cust)]["1.quant"] = quant
+            group[(key_cust)]["1.date"] = date
             group[(key_cust)]["1.state"] = state
       if group[(key_cust)]["cust"] == cust and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
         if not group[(key_cust)]["1_sum_quant"]:
@@ -111,7 +111,7 @@ def query():
 
   formater = Formatter()
   for val in group.values():
-    if val["1_sum_quant"] * 30 > val["0_sum_quant"] and val["1.quant"] == val["1_min_quant"] and val["1.date"] > dt.fromisoformat("2019-06-06"):
+    if (val["1_sum_quant"] * 30 > val["0_sum_quant"] and val["1.quant"] == val["1_min_quant"]) and (val["1.date"] > dt.fromisoformat("2019-06-06")):
       data = {"col1": val["cust"], "col2": val["1.quant"], "col3": val["1.state"], "col4": str(val["1.date"])}
       print(formater.format(row_formatter, **data))
 
