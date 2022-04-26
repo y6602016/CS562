@@ -23,3 +23,4 @@ with t1 as(
 select s.cust, s.prod, s.quant, s.state, s.date
 from sales s, t1
 where s.cust = t1.cust and s.prod = t1.prod and s.quant = t1.t1_max
+order by cust

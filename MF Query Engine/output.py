@@ -5,7 +5,7 @@ from datetime import date as dt
 import string
 
 class Formatter(string.Formatter):
-    def __init__(self, missing = 'None', bad_fmt = '!!'):
+    def __init__(self, missing = '%-11s%-0s'%("", "None"), bad_fmt = '!!'):
         self.missing, self.bad_fmt = missing, bad_fmt
 
     def get_field(self, field_name, args, kwargs):
@@ -35,65 +35,61 @@ def query():
   cursor.execute(query)
   rows = cursor.fetchall()
   
-  mf_structure = {'cust': None, 'prod': None, '1.quant': None, '1.state': None, '1.date': None, '0_sum_quant': None, '1_min_quant': None, '1_sum_quant': None}
+  mf_structure = {'prod': None, 'month': None, '1_count_quant': None, '2_count_quant': None, '0_avg_quant': None}
   group = collections.defaultdict(lambda: dict(mf_structure))
 
 
 
   #1th Scan:
+  count_0_quant= collections.defaultdict(int)
   for row in rows:
     #Grouping attributes:
-    key_cust = row[0]
     key_prod = row[1]
+    key_month = row[3]
     quant = row[6]
-    if not group[(key_cust, key_prod)]["cust"]:
-      group[(key_cust, key_prod)]["cust"] = key_cust
-      group[(key_cust, key_prod)]["prod"] = key_prod
-    if not group[(key_cust, key_prod)]["0_sum_quant"]:
-      group[(key_cust, key_prod)]["0_sum_quant"] = quant
+    if not group[(key_prod, key_month)]["prod"]:
+      group[(key_prod, key_month)]["prod"] = key_prod
+      group[(key_prod, key_month)]["month"] = key_month
+    if not group[(key_prod, key_month)]["0_avg_quant"]:
+      group[(key_prod, key_month)]["0_avg_quant"] = quant
+      count_0_quant[(key_prod, key_month)] += 1
     else:
-      group[(key_cust, key_prod)]["0_sum_quant"] += quant
-
+      count_0_quant[(key_prod, key_month)] += 1
+      group[(key_prod, key_month)]["0_avg_quant"] += ((quant - group[(key_prod, key_month)]["0_avg_quant"])/count_0_quant[(key_prod, key_month)])
 
 
   #2th Scan:
-  for (key_cust, key_prod) in group:
+  for (key_prod, key_month) in group:
     for row in rows:
       #Grouping attributes:
-      cust = row[0]
       prod = row[1]
+      month = row[3]
 
       #Process Grouping Variable 1:
-      state = row[5]
       quant = row[6]
-      date = row[7]
-      if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
-        if not group[(key_cust, key_prod)]["1_min_quant"]:
-          group[(key_cust, key_prod)]["1_min_quant"] = quant
-          group[(key_cust, key_prod)]["1.quant"] = quant
-          group[(key_cust, key_prod)]["1.state"] = state
-          group[(key_cust, key_prod)]["1.date"] = date
+      if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month + 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
+        if not group[(key_prod, key_month)]["1_count_quant"]:
+          group[(key_prod, key_month)]["1_count_quant"] = 1
         else:
-          if quant < group[(key_cust, key_prod)]["1_min_quant"]:
-            group[(key_cust, key_prod)]["1_min_quant"] = quant
-            group[(key_cust, key_prod)]["1.quant"] = quant
-            group[(key_cust, key_prod)]["1.state"] = state
-            group[(key_cust, key_prod)]["1.date"] = date
-      if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
-        if not group[(key_cust, key_prod)]["1_sum_quant"]:
-          group[(key_cust, key_prod)]["1_sum_quant"] = quant
+          group[(key_prod, key_month)]["1_count_quant"] += 1
+
+
+      #Process Grouping Variable 2:
+      quant = row[6]
+      if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month - 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
+        if not group[(key_prod, key_month)]["2_count_quant"]:
+          group[(key_prod, key_month)]["2_count_quant"] = 1
         else:
-          group[(key_cust, key_prod)]["1_sum_quant"] += quant
+          group[(key_prod, key_month)]["2_count_quant"] += 1
 
 
 
   columns_type = []
   for val in group.values():
-    columns_type.append(type(val["cust"]))
     columns_type.append(type(val["prod"]))
-    columns_type.append(type(val["1.quant"]))
-    columns_type.append(type(val["1.state"]))
-    columns_type.append(type(val["1.date"]))
+    columns_type.append(type(val["month"]))
+    columns_type.append(type(val["1_count_quant"]))
+    columns_type.append(type(val["2_count_quant"]))
     break
 
   row_formatter = []
@@ -111,13 +107,12 @@ def query():
       title_formatter.append("{:<15}")
   title_formatter = "|".join(title_formatter)
   row_formatter = "|".join(row_formatter)
-  print(title_formatter.format("cust", "prod", "1.quant", "1.state", "1.date"))
+  print(title_formatter.format("prod", "month", "1_count_quant", "2_count_quant"))
 
   formater = Formatter()
   for val in group.values():
-    if val["1_sum_quant"] * 30 > val["0_sum_quant"] and val["1.quant"] == val["1_min_quant"] and val["1_min_quant"] > 270:
-      data = {"col1": val["cust"], "col2": val["prod"], "col3": val["1.quant"], "col4": val["1.state"], "col5": str(val["1.date"])}
-      print(formater.format(row_formatter, **data))
+    data = {"col1": val["prod"], "col2": val["month"], "col3": val["1_count_quant"], "col4": val["2_count_quant"]}
+    print(formater.format(row_formatter, **data))
 
 
 if __name__ == "__main__":

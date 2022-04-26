@@ -1,0 +1,35 @@
+SELECT ATTRIBUTE(S):
+prod, month, 1_avg_quant, 2_avg_quant
+NUMBER OF GROUPING VARIABLES(n):
+2
+GROUPING ATTRIBUTES(V):
+prod, month
+F-VECT([F]):
+1_avg_quant, 2_avg_quant
+SELECT CONDITION-VECT([σ]):
+1.prod == prod and 1.month < month, 2.prod == prod and 2.month > month
+HAVING_CONDITION(G):
+
+
+
+<EMF>
+<Standard SQL>
+
+with t1 as (
+	select x.prod, x.month, avg(y.quant) smaller_avg
+	from sales x, sales y
+	where x.prod = y.prod and x.month > y.month
+	group by x.prod, x.month
+),
+t2 as (
+	select x.prod, x.month, avg(y.quant) larger_avg
+	from sales x, sales y
+	where x.prod = y.prod and x.month < y.month
+	group by x.prod, x.month
+
+)
+select t1.prod, t1.month, t1.smaller_avg, t2.larger_avg
+from t1
+full outer join t2
+on t1.prod = t2.prod and t1.month = t2.month
+order by prod

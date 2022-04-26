@@ -24,7 +24,7 @@ def processRel(N, C, F):
       else:
         # if c.isdigit() and int(c) < i and int(c) != 0:
         #   depend_map[i].append(int(c))
-        if c.isdigit() and int(c) < i:
+        if c.isdigit() and int(c) < i and j + 1 < len(condition) and condition[j + 1] == "_":
           if int(c) != 0:
             depend_map[i].append(int(c))
           n = j + 1
@@ -41,8 +41,22 @@ def processRel(N, C, F):
 def processCondition(V, condition, group_attr, schema):
   new_processed = []
   such_that_attr = []
+
+  group_variable = condition[0]
+  mf_check = ""
+  for i, v in enumerate(V):
+    mf_check += (group_variable + "." + v + " == " + v)
+    if i != len(V) - 1:
+      mf_check += " and "
+
+  is_emf = False
+  if mf_check not in condition or (len(mf_check) + 1 < len(condition) and condition[len(mf_check) + 1] != "and"):
+    is_emf = True
+
+
   splitted = condition.split(" ")
   special_type_index = -1
+  emf_process_index = -1
   for i, word in enumerate(splitted):
     temp_word = word
     word = word.replace("(", "")
@@ -53,6 +67,8 @@ def processCondition(V, condition, group_attr, schema):
       attr = word.split(".")[1]
       if attr in V:
         processed = f'group[{group_attr}]["' + attr + '"]'
+        if is_emf:
+          emf_process_index = i
       elif attr in schema:
         such_that_attr.append(attr)
         processed = attr
@@ -64,6 +80,21 @@ def processCondition(V, condition, group_attr, schema):
       if special_type_index > -1 and i == special_type_index + 2:
         processed = f'dt.fromisoformat("' + word + '")'
         special_type_index = -1
+      elif emf_process_index > -1:
+        if i == emf_process_index + 1 and (word == ">" or word == "<"):
+          if word == ">":
+            processed = "<"
+          elif word == "<":
+            processed = ">"
+          emf_process_index = - 1
+        elif i == emf_process_index + 3 and (word == "+" or word == "-"):
+          if word == "-":
+            processed = "+"
+          elif word == "+":
+            processed = "-"
+          emf_process_index = - 1
+        else:
+          processed = word
       else:
         processed = word
 
