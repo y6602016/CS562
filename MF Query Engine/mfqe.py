@@ -1,11 +1,12 @@
 import psycopg2
 import collections
 from config import config
-from convertMFStructure import *
-from inputProcess import *
-from outputProcess import *
-from groupVariableProcess import *
-from schemaProcess import *
+from CoreProcess.convertMFStructure import *
+from CoreProcess.groupVariableProcess import *
+from CoreProcess.schemaProcess import *
+from InputProcess.inputProcess import *
+from OutputProcess.outputProcess import *
+
 
 
 global_indentation = 2
@@ -34,7 +35,7 @@ def connect():
 
 
     # Open a file: file
-    file = open('query_input8.txt',mode='r')
+    file = open('query_input3.txt',mode='r')
   
     # read all lines at once
     input_file = file.read()
@@ -57,7 +58,7 @@ def connect():
       G = operands["HAVING_CONDITION(G)"]
 
       # 1. Call a function to produce MF-Struture
-      mf_structure = convertMFStructure(operands, cur)
+      mf_structure = convertMFStructure(operands)
       
       script = writeMFStructure(mf_structure, script, global_indentation)
       
@@ -106,7 +107,7 @@ def connect():
         script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, 
           group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation)
 
-      script = writeProject(S, G, mf_structure, schema, script, global_indentation)
+      script = writeProject(S, G, schema, script, global_indentation)
       
 
     

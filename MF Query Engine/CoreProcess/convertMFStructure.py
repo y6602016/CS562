@@ -1,8 +1,4 @@
-def convertMFStructure(input_file, cursor):
-  
-  # query = "select column_name, data_type from information_schema.columns where table_name = 'sales'"
-  # cursor.execute(query)
-
+def convertMFStructure(input_file):
   mf_structure = {}
 
   for attr in input_file["SELECT ATTRIBUTE(S)"]:
