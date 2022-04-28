@@ -1,3 +1,6 @@
+select requirements:
+1. Must select all grouping attributes
+
 condition requirements:
 1. Space between operator is needed
 2. Always start with grouping attribute definition

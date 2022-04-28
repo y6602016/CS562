@@ -35,7 +35,7 @@ def connect():
 
 
     # Open a file: file
-    file = open('query_input3.txt',mode='r')
+    file = open('query_input7.txt',mode='r')
   
     # read all lines at once
     input_file = file.read()
