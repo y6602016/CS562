@@ -35,7 +35,7 @@ def connect():
 
 
     # Open a file: file
-    file = open('query_input7.txt',mode='r')
+    file = open('query_input8.txt',mode='r')
   
     # read all lines at once
     input_file = file.read()
@@ -60,7 +60,7 @@ def connect():
       # 1. Call a function to produce MF-Struture
       mf_structure = convertMFStructure(operands)
       
-      script = writeMFStructure(mf_structure, script, global_indentation)
+      script += writeMFStructure(mf_structure, global_indentation)
       
       # ==============
       # Analyze the related columns of grouping variables that need to be updated in a scan
@@ -77,9 +77,18 @@ def connect():
 
       
       # initial scan
-      script += ("\n\n" + (" " * global_indentation) + "#1th Scan:\n")
+      script += ("\n\n" + (" " * global_indentation) + "#=====================================================\n")
+      script += ((" " * global_indentation) + "#= the first scan to fill all grouping attributes    =\n")
+      script += ((" " * global_indentation) + "#= and aggregatation function of grouping variable_0 =\n")
+      script += ((" " * global_indentation) + "#=====================================================\n")
+      script += ("\n" + (" " * global_indentation) + "#1th Scan:\n")
       script = writeFirstScan(V, F, schema, script, global_indentation)
       
+      script += ("\n\n\n" + (" " * global_indentation) + "#===================================================================\n")
+      script += ((" " * global_indentation) + "#= the following scans process all grouping variables              =\n")
+      script += ((" " * global_indentation) + "#= non-dependent grouping variables are processed in the same scan =\n")
+      script += ((" " * global_indentation) + "#===================================================================\n")
+
       # remaining scan
       # topological sorting preparation
       edges = collections.defaultdict(list)   
@@ -102,11 +111,15 @@ def connect():
             in_degrees[next_val] -= 1
             if in_degrees[next_val] == 0:
               queue.append(next_val)
-        script += ("\n\n" + (" " * global_indentation) + f"#{scan_times + 1}th Scan:\n")
+        script += ("\n" + (" " * global_indentation) + f"#{scan_times + 1}th Scan:\n")
         scan_times += 1
-        script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, 
+        script = writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, 
           group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation)
 
+
+      script += ("\n\n" + (" " * global_indentation) + "#===================================================\n")
+      script += ((" " * global_indentation) + "#= formatter process and output the query result   =\n")
+      script += ((" " * global_indentation) + "#===================================================\n")
       script = writeProject(S, G, schema, script, global_indentation)
       
 

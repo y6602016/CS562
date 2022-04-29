@@ -4,6 +4,9 @@ from config import config
 from datetime import date as dt
 import string
 
+#==============================================
+#= The class used to handle output None value =
+#==============================================
 class Formatter(string.Formatter):
     def __init__(self, missing = '%-11s%-0s'%("", "None"), bad_fmt = '!!'):
         self.missing, self.bad_fmt = missing, bad_fmt
@@ -27,6 +30,9 @@ class Formatter(string.Formatter):
             else: raise
 
 def query():
+  #===================================================
+  #= connnect to db and use the cursor to query data =
+  #===================================================
   params = config()
   conn = psycopg2.connect(**params)
   cursor = conn.cursor()

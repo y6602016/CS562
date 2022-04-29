@@ -2,14 +2,21 @@ from CoreProcess.aggregateProcess import *
 from CoreProcess.groupVariableProcess import *
 from OutputProcess.formatter import *
 
-def writeMFStructure(mf_structure, script, global_indentation):
-  script += ((" " * global_indentation) + "mf_structure = ")
+def writeMFStructure(mf_structure, global_indentation):
+  structure = ("\n\n" + (" " * global_indentation) + "#====================================================================================\n")
+  structure += ((" " * global_indentation) + "#= the data structure of mf_structure is hashtable                                  =\n")
+  structure += ((" " * global_indentation) + "#= group is a hashtable with grouping attributes as keys and mf_structure as values =\n")
+  structure += ((" " * global_indentation) + "#====================================================================================\n")
+
+  structure += ((" " * global_indentation) + "mf_structure = ")
+
+  structure += ((" " * global_indentation) + "mf_structure = ")
   
-  script += (str(mf_structure) + "\n")
+  structure += (str(mf_structure) + "\n")
 
-  script += ((" " * global_indentation) + "group = collections.defaultdict(lambda: dict(mf_structure))\n\n")
+  structure += ((" " * global_indentation) + "group = collections.defaultdict(lambda: dict(mf_structure))\n\n")
 
-  return script
+  return structure
 
 def writeGroupAttrIndex(V, schema, script, global_indentation):
   script += ((" " * global_indentation) + "group_attr_index = ")
@@ -75,7 +82,7 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
   return script
 
-def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_fun, 
+def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, 
   group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation):
 
   key_V = ["key_" + group_attr for group_attr in V]
@@ -140,7 +147,7 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, depend_f
 
 def writeProject(S, G, schema, script, global_indentation):
   # get the type
-  script += ("\n\n" + (" " * global_indentation) + "columns_type = []\n")
+  script += ((" " * global_indentation) + "columns_type = []\n")
   script += ((" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2
   columns_type = ""

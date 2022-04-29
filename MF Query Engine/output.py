@@ -4,6 +4,9 @@ from config import config
 from datetime import date as dt
 import string
 
+#==============================================
+#= The class used to handle output None value =
+#==============================================
 class Formatter(string.Formatter):
     def __init__(self, missing = '%-11s%-0s'%("", "None"), bad_fmt = '!!'):
         self.missing, self.bad_fmt = missing, bad_fmt
@@ -27,6 +30,9 @@ class Formatter(string.Formatter):
             else: raise
 
 def query():
+  #===================================================
+  #= connnect to db and use the cursor to query data =
+  #===================================================
   params = config()
   conn = psycopg2.connect(**params)
   cursor = conn.cursor()
@@ -35,61 +41,81 @@ def query():
   cursor.execute(query)
   rows = cursor.fetchall()
   
-  mf_structure = {'cust': None, 'prod': None, 'year': None, '1_avg_quant': None, '2_avg_quant': None}
+
+
+  #====================================================================================
+  #= the data structure of mf_structure is hashtable                                  =
+  #= group is a hashtable with grouping attributes as keys and mf_structure as values =
+  #====================================================================================
+  mf_structure =   mf_structure = {'prod': None, 'month': None, '1_count_quant': None, '2_count_quant': None, '0_avg_quant': None}
   group = collections.defaultdict(lambda: dict(mf_structure))
 
 
 
+  #=====================================================
+  #= the first scan to fill all grouping attributes    =
+  #= and aggregatation function of grouping variable_0 =
+  #=====================================================
+
   #1th Scan:
+  count_0_quant= collections.defaultdict(int)
   for row in rows:
     #Grouping attributes:
-    key_year = row[4]
     key_prod = row[1]
-    key_cust = row[0]
-    if not group[(key_year, key_prod, key_cust)]["year"]:
-      group[(key_year, key_prod, key_cust)]["year"] = key_year
-      group[(key_year, key_prod, key_cust)]["prod"] = key_prod
-      group[(key_year, key_prod, key_cust)]["cust"] = key_cust
+    key_month = row[3]
+    quant = row[6]
+    if not group[(key_prod, key_month)]["prod"]:
+      group[(key_prod, key_month)]["prod"] = key_prod
+      group[(key_prod, key_month)]["month"] = key_month
+    if not group[(key_prod, key_month)]["0_avg_quant"]:
+      group[(key_prod, key_month)]["0_avg_quant"] = quant
+      count_0_quant[(key_prod, key_month)] += 1
+    else:
+      count_0_quant[(key_prod, key_month)] += 1
+      group[(key_prod, key_month)]["0_avg_quant"] += ((quant - group[(key_prod, key_month)]["0_avg_quant"])/count_0_quant[(key_prod, key_month)])
 
+
+
+  #===================================================================
+  #= the following scans process all grouping variables              =
+  #= non-dependent grouping variables are processed in the same scan =
+  #===================================================================
 
   #2th Scan:
-  count_1_quant= collections.defaultdict(int)
-  count_2_quant= collections.defaultdict(int)
-  for (key_year, key_prod, key_cust) in group:
+  for (key_prod, key_month) in group:
     for row in rows:
       #Grouping attributes:
-      year = row[4]
       prod = row[1]
-      cust = row[0]
+      month = row[3]
 
       #Process Grouping Variable 1:
       quant = row[6]
-      if group[(key_year, key_prod, key_cust)]["cust"] == cust and group[(key_year, key_prod, key_cust)]["prod"] == prod and group[(key_year, key_prod, key_cust)]["year"] == year:
-        if not group[(key_year, key_prod, key_cust)]["1_avg_quant"]:
-          group[(key_year, key_prod, key_cust)]["1_avg_quant"] = quant
-          count_1_quant[(key_year, key_prod, key_cust)] += 1
+      if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month + 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
+        if not group[(key_prod, key_month)]["1_count_quant"]:
+          group[(key_prod, key_month)]["1_count_quant"] = 1
         else:
-          count_1_quant[(key_year, key_prod, key_cust)] += 1
-          group[(key_year, key_prod, key_cust)]["1_avg_quant"] += ((quant - group[(key_year, key_prod, key_cust)]["1_avg_quant"])/count_1_quant[(key_year, key_prod, key_cust)])
+          group[(key_prod, key_month)]["1_count_quant"] += 1
+
 
       #Process Grouping Variable 2:
       quant = row[6]
-      if group[(key_year, key_prod, key_cust)]["cust"] == cust and group[(key_year, key_prod, key_cust)]["prod"] == prod:
-        if not group[(key_year, key_prod, key_cust)]["2_avg_quant"]:
-          group[(key_year, key_prod, key_cust)]["2_avg_quant"] = quant
-          count_2_quant[(key_year, key_prod, key_cust)] += 1
+      if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month - 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
+        if not group[(key_prod, key_month)]["2_count_quant"]:
+          group[(key_prod, key_month)]["2_count_quant"] = 1
         else:
-          count_2_quant[(key_year, key_prod, key_cust)] += 1
-          group[(key_year, key_prod, key_cust)]["2_avg_quant"] += ((quant - group[(key_year, key_prod, key_cust)]["2_avg_quant"])/count_2_quant[(key_year, key_prod, key_cust)])
+          group[(key_prod, key_month)]["2_count_quant"] += 1
 
 
+
+  #===================================================
+  #= formatter process and output the query result   =
+  #===================================================
   columns_type = []
   for val in group.values():
-    columns_type.append(type(val["cust"]))
     columns_type.append(type(val["prod"]))
-    columns_type.append(type(val["year"]))
-    columns_type.append(type(val["1_avg_quant"]))
-    columns_type.append(type(val["2_avg_quant"]))
+    columns_type.append(type(val["month"]))
+    columns_type.append(type(val["1_count_quant"]))
+    columns_type.append(type(val["2_count_quant"]))
     break
 
   row_formatter = []
@@ -107,11 +133,11 @@ def query():
       title_formatter.append("{:<15}")
   title_formatter = "|".join(title_formatter)
   row_formatter = "|".join(row_formatter)
-  print(title_formatter.format("cust", "prod", "year", "1_avg_quant", "2_avg_quant"))
+  print(title_formatter.format("prod", "month", "1_count_quant", "2_count_quant"))
 
   formatter = Formatter()
   for val in group.values():
-    data = {"col1": val["cust"], "col2": val["prod"], "col3": val["year"], "col4": val["1_avg_quant"], "col5": val["2_avg_quant"]}
+    data = {"col1": val["prod"], "col2": val["month"], "col3": val["1_count_quant"], "col4": val["2_count_quant"]}
     print(formatter.format(row_formatter, **data))
 
 
