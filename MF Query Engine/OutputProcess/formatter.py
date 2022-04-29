@@ -1,7 +1,8 @@
 def formatterScript(global_indentation):
+  """write the formatter process script"""
+
   type_formatter = ((" " * global_indentation) + 'row_formatter = []\n')
   type_formatter += ((" " * global_indentation) + 'title_formatter = []\n')
-  type_formatter += ((" " * global_indentation) + 'date_index = []\n')
   type_formatter += ((" " * global_indentation) + "for i, t in enumerate(columns_type):\n")
   global_indentation += 2
   type_formatter += ((" " * global_indentation) + "if t == str or t == dt:\n")

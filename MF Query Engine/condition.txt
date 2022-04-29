@@ -5,3 +5,4 @@ condition requirements:
 1. Space between operator is needed
 2. Always start with grouping attribute definition
 3. All conditions are in the same line, no new line
+4. Order is in the order of grouping variables

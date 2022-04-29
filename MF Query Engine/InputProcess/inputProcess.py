@@ -1,4 +1,6 @@
 def menu():
+  """The menu function for users to key in inputs by keyboard"""
+
   valid_select = False
   while not valid_select:
     value = input("Please select the way to read operands:\n1: From the query_input.txt file\n2: Enter value by keyboard\n")
@@ -73,7 +75,10 @@ def menu():
       print("Invalid input, please select 1 or 2")
 
 
-def checkOperands(input_file):
+def convertOperands(input_file):
+  """The function to convert inputs to seperated lists, all inputs are stored as string type"""
+
+
   # use a dict to store all operands' values
   operands = {
     "SELECT ATTRIBUTE(S)" : list(),

@@ -8,43 +8,36 @@ from InputProcess.inputProcess import *
 from OutputProcess.outputProcess import *
 
 
-
-global_indentation = 2
-script = "import psycopg2\nimport collections\ndef query():\n"
-
 def connect():
-  global global_indentation
+  global_indentation = 2
   template = open('template.txt',mode='r')
   script = template.read() + "\n"
   template.close()
 
-  # script = "import psycopg2\nimport collections\ndef query():\n"
   menu()
   conn = None
+
   try:
-    # ===== Connect to db =====
-    # read connection parameters
+    #=======================================
+    #= connect to db and create the cursor =
+    #=======================================
     params = config()
-
-    # connect to the PostgreSQL server
     conn = psycopg2.connect(**params)
-
-    # create a cursor
     cur = conn.cursor()
-    # ===== Connect to db =====
 
 
-    # Open a file: file
-    file = open('query_input8.txt',mode='r')
-  
-    # read all lines at once
+    #=======================
+    #= read the input file =
+    #=======================
+    file = open('query_input.txt',mode='r')
     input_file = file.read()
-
-    # close the file
     file.close()
 
-    operands = checkOperands(input_file)
 
+    #===============================================
+    #= convert operands and get the db column type =
+    #===============================================
+    operands = convertOperands(input_file)
     schema = processSchema(cur)
 
     if not operands:
@@ -57,26 +50,31 @@ def connect():
       C = operands["SELECT CONDITION-VECT([σ])"]
       G = operands["HAVING_CONDITION(G)"]
 
-      # 1. Call a function to produce MF-Struture
+      #=======================
+      #= create mf-structure =
+      #=======================
       mf_structure = convertMFStructure(operands)
       
       script += writeMFStructure(mf_structure, global_indentation)
       
-      # ==============
-      # Analyze the related columns of grouping variables that need to be updated in a scan
-      # We divide the related columns to rel attributes and rel aggregate functions
-      # 1. Process each grouping variables rel attributes
+
+      # =======================================================================================
+      # = analyze the related columns of grouping variables that need to be updated in a scan =
+      # = we divide the related columns to "rel attributes" and "rel aggregate functions"     =
+      # = (1). Process each grouping variables rel attributes                                 =
       group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(S, N, V, C, G)
       
-      # 1. Process each grouping variables rel aggregate functions
-      # 1. aggregate function
-      # 2. dependency of other grouping variables
-      # 3. dependency of other grouping variables' fnction
-      group_variable_fs, depend_map, depend_fun = processRel(N, C, F)
-      # ==============
+      # = (2). Process each grouping variables rel aggregate functions                        =
+      # =   1. aggregate function                                                             =
+      # =   2. dependency of other grouping variables                                         =
+      group_variable_fs, depend_map= processRel(N, C, F)
+      # =======================================================================================
 
       
-      # initial scan
+      #=========================
+      #= output the first scan =
+      #=========================
+
       script += ("\n\n" + (" " * global_indentation) + "#=====================================================\n")
       script += ((" " * global_indentation) + "#= the first scan to fill all grouping attributes    =\n")
       script += ((" " * global_indentation) + "#= and aggregatation function of grouping variable_0 =\n")
@@ -84,13 +82,17 @@ def connect():
       script += ("\n" + (" " * global_indentation) + "#1th Scan:\n")
       script = writeFirstScan(V, F, schema, script, global_indentation)
       
+
+      #====================================================================================
+      #= output the remaining scans with topological sort to minimize the number of scans =
+      #====================================================================================
+
       script += ("\n\n\n" + (" " * global_indentation) + "#===================================================================\n")
       script += ((" " * global_indentation) + "#= the following scans process all grouping variables              =\n")
       script += ((" " * global_indentation) + "#= non-dependent grouping variables are processed in the same scan =\n")
       script += ((" " * global_indentation) + "#===================================================================\n")
 
-      # remaining scan
-      # topological sorting preparation
+      # topological sort
       edges = collections.defaultdict(list)   
       in_degrees = [0] * (int(N[0]) + 1)
       for value, depend_list in depend_map.items():
@@ -117,6 +119,9 @@ def connect():
           group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation)
 
 
+      #=========================
+      #= output the projection =
+      #=========================
       script += ("\n\n" + (" " * global_indentation) + "#===================================================\n")
       script += ((" " * global_indentation) + "#= formatter process and output the query result   =\n")
       script += ((" " * global_indentation) + "#===================================================\n")
@@ -129,7 +134,6 @@ def connect():
     file = open('output.py',mode='w')
     file.write(script)
     file.close()
-    # close the communication with the PostgreSQL
     cur.close()
 
   except (Exception, psycopg2.DatabaseError) as error:

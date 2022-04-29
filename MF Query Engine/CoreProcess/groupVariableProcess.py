@@ -2,9 +2,10 @@ import collections
 from datetime import date
 
 def processRel(N, C, F):
+  """process grouping variable's aggregation functions used in S, C or G, and create the depending map"""
+
   group_variable_fs = collections.defaultdict(list)
   depend_map = collections.defaultdict(list)
-  depend_fun = collections.defaultdict(list)
 
   # process function
   for f in F:
@@ -30,15 +31,16 @@ def processRel(N, C, F):
           n = j + 1
           while n < len(condition) and (condition[n].isalpha() or condition[n] == "_"):
             n += 1
-          func = condition[j:n]
-          if func in F:
-            depend_fun[i].append(func)
+
+
         j += 1
 
-  return group_variable_fs, depend_map, depend_fun
+  return group_variable_fs, depend_map
 
 
 def processCondition(V, condition, group_attr, schema):
+  """process each grouping variable's condition statement"""
+
   new_processed = []
   such_that_attr = []
 
@@ -111,7 +113,10 @@ def processCondition(V, condition, group_attr, schema):
   processed = " ".join(new_processed)
   return processed, such_that_attr
 
+
 def processHaving(having, schema):
+  """process the having statement"""
+
   new_processed = []
   splitted = having.split(" ")
   special_type_index = -1
@@ -149,6 +154,8 @@ def processHaving(having, schema):
 
 
 def processAttr(S, N, V, C, G):
+  """process grouping variable's attributes used in S, C or G"""
+
   # if S contains gv's attr, it means the gv is narrowed to a single tuple
   # we need to find out where the narrowing occurs. It may in C or in G
   # ex: 

@@ -1,8 +1,10 @@
-from CoreProcess.aggregateProcess import *
+from OutputProcess.aggregateProcess import *
 from CoreProcess.groupVariableProcess import *
 from OutputProcess.formatter import *
 
 def writeMFStructure(mf_structure, global_indentation):
+  """write the script of mf_structure and group hashtable used for scanning"""
+
   structure = ("\n\n" + (" " * global_indentation) + "#====================================================================================\n")
   structure += ((" " * global_indentation) + "#= the data structure of mf_structure is hashtable                                  =\n")
   structure += ((" " * global_indentation) + "#= group is a hashtable with grouping attributes as keys and mf_structure as values =\n")
@@ -18,17 +20,10 @@ def writeMFStructure(mf_structure, global_indentation):
 
   return structure
 
-def writeGroupAttrIndex(V, schema, script, global_indentation):
-  script += ((" " * global_indentation) + "group_attr_index = ")
-  group_attr_index = list()
-  for i, attr in enumerate(schema):
-    if attr[0] in V:
-      group_attr_index.append(i)
-  script += (str(group_attr_index) + "\n\n")
-  return script, group_attr_index
-
 def writeFirstScan(V, F, schema, script, global_indentation):
-  # ex:
+  """write the script of first initial scan"""
+
+  # process F lists, ex:
   # F = ["0_avg_quant", "0_max_quant"]
   # F0 = [("avg", "quant", "0_avg_quant"), ("max", "quant", "0_max_quant")]
   F0 = []
@@ -84,6 +79,7 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
 def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, 
   group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation):
+  """write the script of scans of grouping variables"""
 
   key_V = ["key_" + group_attr for group_attr in V]
   group_attr = "(" + ", ".join(key_V) + ")"
@@ -146,6 +142,8 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs,
 
 
 def writeProject(S, G, schema, script, global_indentation):
+  """writhe the script of query result projection"""
+
   # get the type
   script += ((" " * global_indentation) + "columns_type = []\n")
   script += ((" " * global_indentation) + "for val in group.values():\n")

@@ -1,4 +1,6 @@
 def avgScript(group_attr, func, group_variable, global_indentation, condition):
+  """write the script of average aggregation function"""
+
   avg = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   count_key = "count_" + group_variable + "_" + func[1] + "[" + group_attr + "]"
@@ -22,6 +24,8 @@ def avgScript(group_attr, func, group_variable, global_indentation, condition):
 
 
 def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_indentation, condition):
+  """write the script of max aggregation function"""
+  
   max = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
 
@@ -50,6 +54,8 @@ def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_inden
 
 
 def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_indentation, condition):
+  """write the script of min aggregation function"""
+  
   min = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
@@ -78,6 +84,8 @@ def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_inden
 
 
 def countScript(group_attr, func, global_indentation, condition):
+  """write the script of count aggregation function"""
+  
   count = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
@@ -95,6 +103,8 @@ def countScript(group_attr, func, global_indentation, condition):
   return count
 
 def sumScript(group_attr, func, global_indentation, condition):
+  """write the script of sum aggregation function"""
+  
   sum = ""
 
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
@@ -113,6 +123,8 @@ def sumScript(group_attr, func, global_indentation, condition):
   return sum
 
 def noAggregate(group_attr, attrs, global_indentation, condition):
+  """write the script without aggregation function"""
+  
   update = ""
 
   update += ((" " * global_indentation) + "if " + condition + ":\n")
