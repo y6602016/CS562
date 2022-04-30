@@ -2,7 +2,7 @@ from OutputProcess.aggregateProcess import *
 from CoreProcess.groupVariableProcess import *
 from OutputProcess.formatter import *
 
-def writeMFStructure(mf_structure, global_indentation):
+def writeMFStructure(mf_structure, mf_type, global_indentation):
   """write the script of mf_structure and group hashtable used for scanning"""
 
   structure = ("\n\n" + (" " * global_indentation) + "#====================================================================================\n")
@@ -11,10 +11,10 @@ def writeMFStructure(mf_structure, global_indentation):
   structure += ((" " * global_indentation) + "#====================================================================================\n")
 
   structure += ((" " * global_indentation) + "mf_structure = ")
-
-  structure += ((" " * global_indentation) + "mf_structure = ")
-  
   structure += (str(mf_structure) + "\n")
+
+  structure += ((" " * global_indentation) + "mf_type = ")
+  structure += (str(mf_type) + "\n")
 
   structure += ((" " * global_indentation) + "group = collections.defaultdict(lambda: dict(mf_structure))\n\n")
 
@@ -146,13 +146,11 @@ def writeProject(S, G, schema, script, global_indentation):
 
   # get the type
   script += ((" " * global_indentation) + "columns_type = []\n")
-  script += ((" " * global_indentation) + "for val in group.values():\n")
-  global_indentation += 2
   columns_type = ""
   for i, s in enumerate(S):
-    columns_type += ((" " * global_indentation) + 'columns_type.append(type(val["' + s + '"]))\n')
-  script += (columns_type + (" " * global_indentation) + "break\n\n")
-  global_indentation -= 2
+    columns_type += ((" " * global_indentation) + 'columns_type.append(mf_type["' + s + '"])\n')
+
+  script += columns_type
 
   # build formatter
   script += formatterScript(global_indentation)

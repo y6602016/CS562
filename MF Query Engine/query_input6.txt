@@ -9,3 +9,4 @@ F-VECT([F]):
 SELECT CONDITION-VECT([σ]):
 1.prod == prod and 1.month < month, 2.prod == prod and 2.month > month
 HAVING_CONDITION(G):
+1_avg_quant > 400 

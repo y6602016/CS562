@@ -5,7 +5,7 @@ def processRel(N, C, F):
   """process grouping variable's aggregation functions used in S, C or G, and create the depending map"""
 
   group_variable_fs = collections.defaultdict(list)
-  depend_map = collections.defaultdict(list)
+  depend_map = collections.defaultdict(set)
 
   # process function
   for f in F:
@@ -15,25 +15,17 @@ def processRel(N, C, F):
   for i in range(1, int(N[0]) + 1):
     # process conditions
     condition = C[i - 1]
-    j = 0
 
-    while j < len(condition):
-      c = condition[j]
-      if c.isdigit() and int(c) == i:
-        j += 2
-        continue
-      else:
-        # if c.isdigit() and int(c) < i and int(c) != 0:
-        #   depend_map[i].append(int(c))
-        if c.isdigit() and int(c) < i and j + 1 < len(condition) and condition[j + 1] == "_":
-          if int(c) != 0:
-            depend_map[i].append(int(c))
-          n = j + 1
-          while n < len(condition) and (condition[n].isalpha() or condition[n] == "_"):
-            n += 1
+    # j represent the previous grouping variable
+    for j in range(1, i):
+      # case 1, condition mentions previous grouping variable's attributes
+      if str(j) + "." in condition:
+        depend_map[i].add(j)
 
-
-        j += 1
+      # case 2, condition mentions previous grouping variable's aggregation function
+      for pre_function_list in group_variable_fs[j]:
+        if pre_function_list[2] in condition:
+          depend_map[i].add(j)
 
   return group_variable_fs, depend_map
 

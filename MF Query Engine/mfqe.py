@@ -29,7 +29,7 @@ def connect():
     #=======================
     #= read the input file =
     #=======================
-    file = open('query_input.txt',mode='r')
+    file = open('query_input8.txt',mode='r')
     input_file = file.read()
     file.close()
 
@@ -39,6 +39,7 @@ def connect():
     #===============================================
     operands = convertOperands(input_file)
     schema = processSchema(cur)
+
 
     if not operands:
       print("Input values are not valid")
@@ -53,9 +54,9 @@ def connect():
       #=======================
       #= create mf-structure =
       #=======================
-      mf_structure = convertMFStructure(operands)
+      mf_structure, mf_type = convertMFStructure(operands, schema)
       
-      script += writeMFStructure(mf_structure, global_indentation)
+      script += writeMFStructure(mf_structure, mf_type, global_indentation)
       
 
       # =======================================================================================
@@ -95,8 +96,8 @@ def connect():
       # topological sort
       edges = collections.defaultdict(list)   
       in_degrees = [0] * (int(N[0]) + 1)
-      for value, depend_list in depend_map.items():
-        for depend_val in depend_list:
+      for value, depend_set in depend_map.items():
+        for depend_val in depend_set:
           in_degrees[value] += 1
           edges[depend_val].append(value)
 
