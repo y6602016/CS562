@@ -1,5 +1,3 @@
-from datetime import date as dt
-
 def convertMFStructure(input_file, schema):
   """convert the S and F lists to mf_structure hashtable"""
 
@@ -20,7 +18,8 @@ def convertMFStructure(input_file, schema):
 
 
 def getType(attr, mf_type, schema):
-  type = {
+  # type only works against the db of the project, it can expand to more types
+  type = { 
     'character varying': "str",
     'character': "str",
     'integer': "int",
