@@ -3,7 +3,7 @@ def menu():
 
   valid_select = False
   while not valid_select:
-    value = input("Please select the way to read operands:\n1: From the query_input.txt file\n2: Enter value by keyboard\n")
+    value = input("\nPlease select the way to read operands:\n1: From the query_input.txt file\n2: Enter value by keyboard\n")
     if value == "1":
       valid_select = True
     elif value == "2":
@@ -12,7 +12,7 @@ def menu():
       file.write("SELECT ATTRIBUTE(S):\n")
       inputs = []
       while 1:
-        value = input("Please enter a selected attribute.\nEx: 1_sum_quant\nEnter -1 to end\n")
+        value = input("\nPlease enter a selected attribute.\nEx: 1_sum_quant\nEnter -1 to end\n")
         if value == "-1":
           break
         else:
@@ -23,7 +23,7 @@ def menu():
 
       file.write("NUMBER OF GROUPING VARIABLES(n):\n")
       while 1:
-        N = input("Please enter the number of grouping variable.\nEx: 3\n")
+        N = input("\nPlease enter the number of grouping variable.\nEx: 3\n")
         if int(N) < 0:
           print("Please enter a value >= 0\n")
         else:
@@ -32,7 +32,7 @@ def menu():
 
       file.write("GROUPING ATTRIBUTES(V):\n")
       while 1:
-        value = input("Please enter a grouping attribute.\nEx: cust\nEnter -1 to end\n")
+        value = input("\nPlease enter a grouping attribute.\nEx: cust\nEnter -1 to end\n")
         if value == "-1":
           break
         else:
@@ -43,7 +43,7 @@ def menu():
 
       file.write("F-VECT([F]):\n")
       while 1:
-        value = input("Please enter an aggregation function.\nEx: 1_sum_quant\nEnter -1 to end\n")
+        value = input("\nPlease enter an aggregation function.\nEx: 1_sum_quant\nPlease enter aggregation function in the same order with grouping variable\nEnter -1 to end\n")
         if value == "-1":
           break
         else:
@@ -54,7 +54,7 @@ def menu():
 
       file.write("SELECT CONDITION-VECT([σ]):\n")
       while 1:
-        value = input("Please enter an condition to define grouping variable.\nEx: 1.cust == cust and 1.state== ’NY’\nPlease MUST put a space between all operators\nEnter -1 to end\n")
+        value = input("\nPlease enter an condition to define grouping variable.\nEx: 1.cust == cust and 1.state == ’NY’\nPlease MUST put a space between all operators\nPlease enter aggregation function in the same order with grouping variable\nEnter -1 to end\n")
         if value == "-1":
           break
         else:
@@ -64,7 +64,7 @@ def menu():
       inputs = []
 
       file.write("HAVING_CONDITION(G):\n")
-      G = input("Please enter the having clause.\nEx: 1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant\n")
+      G = input("\nPlease enter the having clause.\nEx: 1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant\nIf no having clause, just press Enter\n")
       if value == "-1":
           break
       else:

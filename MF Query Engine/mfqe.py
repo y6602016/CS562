@@ -29,7 +29,7 @@ def connect():
     #=======================
     #= read the input file =
     #=======================
-    file = open('query_input1.txt',mode='r')
+    file = open('query_input.txt',mode='r')
     input_file = file.read()
     file.close()
 
