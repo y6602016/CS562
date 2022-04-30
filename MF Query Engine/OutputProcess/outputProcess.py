@@ -167,12 +167,15 @@ def writeProject(S, G, schema, script, global_indentation):
   script += ((" " * global_indentation) + "for val in group.values():\n")
   global_indentation += 2
 
+  all_output_attr = ""
   if len(G) and len(G[0]):
-    having = processHaving(G[0], schema)
-    script += ((" " * global_indentation) + "if " + having + ":\n")
+    all_output_attr += ((" " * global_indentation) + "try:\n")
     global_indentation += 2
+    having = processHaving(G[0], schema)
+    all_output_attr += ((" " * global_indentation) + "if " + having + ":\n")
+    global_indentation += 4
 
-  all_output_attr = "data = {"
+  all_output_attr += ((" " * global_indentation) + "data = {") 
   is_date = False
   for i, s in enumerate(S):
     if "." in s:
@@ -199,6 +202,13 @@ def writeProject(S, G, schema, script, global_indentation):
 
   all_output_attr += ("\n" + (" " * global_indentation) + "print(formatter.format(row_formatter, **data))\n")
 
-  script += ((" " * global_indentation) + all_output_attr + "\n\n")
+  if len(G) and len(G[0]):
+    global_indentation -= 6
+    all_output_attr += ((" " * global_indentation) + "except(TypeError):\n")
+    global_indentation += 2
+    all_output_attr += ((" " * global_indentation) + "pass\n")
+    
+  global_indentation -= 6
+  script += ((" " * global_indentation) + all_output_attr)
 
   return script

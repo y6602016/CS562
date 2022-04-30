@@ -6,6 +6,8 @@ def avgScript(group_attr, func, group_variable, global_indentation, condition):
   count_key = "count_" + group_variable + "_" + func[1] + "[" + group_attr + "]"
 
   if condition:
+    avg += ((" " * global_indentation) + "try:\n")
+    global_indentation += 2
     avg += ((" " * global_indentation) + "if " + condition + ":\n")
     global_indentation += 2
 
@@ -19,6 +21,12 @@ def avgScript(group_attr, func, group_variable, global_indentation, condition):
   global_indentation += 2
   avg += ((" " * global_indentation) + count_key + " += 1\n")
   avg += ((" " * global_indentation) + group_key + " += ((" + func[1]  + " - " + group_key + ")/" + count_key + ")\n")
+
+  if condition:
+    global_indentation -= 6
+    avg += ((" " * global_indentation) + "except(TypeError):\n")
+    global_indentation += 2
+    avg += ((" " * global_indentation) + "pass\n")
   
   return avg
 
@@ -30,8 +38,11 @@ def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_inden
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
 
   if condition:
+    max += ((" " * global_indentation) + "try:\n")
+    global_indentation += 2
     max += ((" " * global_indentation) + "if " + condition + ":\n")
     global_indentation += 2
+
   max += ((" " * global_indentation) + "if not " + group_key + ":\n")
   global_indentation += 2
   max += ((" " * global_indentation) + group_key + " = " + func[1]  + "\n")
@@ -50,6 +61,12 @@ def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_inden
       group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'
       max += ((" " * global_indentation) + group_attr_key + " = " + attr.split(".")[1] + "\n")
 
+  if condition:
+    global_indentation -= 8
+    max += ((" " * global_indentation) + "except(TypeError):\n")
+    global_indentation += 2
+    max += ((" " * global_indentation) + "pass\n")
+
   return max
 
 
@@ -60,8 +77,12 @@ def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_inden
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
   if condition:
+    min += ((" " * global_indentation) + "try:\n")
+    global_indentation += 2
     min += ((" " * global_indentation) + "if " + condition + ":\n")
     global_indentation += 2
+
+
   min += ((" " * global_indentation) + "if not " + group_key + ":\n")
   global_indentation += 2
   min += ((" " * global_indentation) + group_key + " = " + func[1]  + "\n")
@@ -80,6 +101,12 @@ def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_inden
       group_attr_key = "group[" + group_attr + ']["'  + attr + '"]'
       min += ((" " * global_indentation) + group_attr_key + " = " + attr.split(".")[1] + "\n")
 
+  if condition:
+    global_indentation -= 8
+    min += ((" " * global_indentation) + "except(TypeError):\n")
+    global_indentation += 2
+    min += ((" " * global_indentation) + "pass\n")
+
   return min
 
 
@@ -90,15 +117,24 @@ def countScript(group_attr, func, global_indentation, condition):
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
   if condition:
+    count += ((" " * global_indentation) + "try:\n")
+    global_indentation += 2
     count += ((" " * global_indentation) + "if " + condition + ":\n")
     global_indentation += 2
+
   count += ((" " * global_indentation) + "if not " + group_key + ":\n")
   global_indentation += 2
   count += ((" " * global_indentation) + group_key + " = 1\n")
   global_indentation -= 2 
   count += ((" " * global_indentation) + "else:\n")
   global_indentation += 2
-  count += ((" " * global_indentation) + group_key + " += 1\n\n")
+  count += ((" " * global_indentation) + group_key + " += 1\n")
+
+  if condition:
+    global_indentation -= 6
+    count += ((" " * global_indentation) + "except(TypeError):\n")
+    global_indentation += 2
+    count += ((" " * global_indentation) + "pass\n")
 
   return count
 
@@ -110,15 +146,24 @@ def sumScript(group_attr, func, global_indentation, condition):
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
   
   if condition:
+    sum += ((" " * global_indentation) + "try:\n")
+    global_indentation += 2
     sum += ((" " * global_indentation) + "if " + condition + ":\n")
     global_indentation += 2
+
   sum += ((" " * global_indentation) + "if not " + group_key + ":\n")
   global_indentation += 2
   sum += ((" " * global_indentation) + group_key + " = " + func[1]  + "\n")
   global_indentation -= 2 
   sum += ((" " * global_indentation) + "else:\n")
   global_indentation += 2
-  sum += ((" " * global_indentation) + group_key + " += " + func[1]  + "\n\n")
+  sum += ((" " * global_indentation) + group_key + " += " + func[1]  + "\n")
+
+  if condition:
+    global_indentation -= 6
+    sum += ((" " * global_indentation) + "except(TypeError):\n")
+    global_indentation += 2
+    sum += ((" " * global_indentation) + "pass\n")
 
   return sum
 
@@ -127,12 +172,21 @@ def noAggregate(group_attr, attrs, global_indentation, condition):
   
   update = ""
 
-  update += ((" " * global_indentation) + "if " + condition + ":\n")
-  global_indentation += 2
+  if condition:
+    update += ((" " * global_indentation) + "try:\n")
+    global_indentation += 2
+    update += ((" " * global_indentation) + "if " + condition + ":\n")
+    global_indentation += 2
 
   for attr in attrs:
     group_key = "group[" + group_attr + ']["'  + attr + '"]'
     update += ((" " * global_indentation) + group_key + " = " + attr.split(".")[1]  + "\n")
+
+  if condition:
+    global_indentation -= 4
+    update += ((" " * global_indentation) + "except(TypeError):\n")
+    global_indentation += 2
+    update += ((" " * global_indentation) + "pass\n")
 
 
   return update

@@ -29,7 +29,7 @@ def connect():
     #=======================
     #= read the input file =
     #=======================
-    file = open('query_input8.txt',mode='r')
+    file = open('query_input1.txt',mode='r')
     input_file = file.read()
     file.close()
 
@@ -130,7 +130,7 @@ def connect():
       
 
     
-    script += ('if __name__ == "__main__":\n' + (" " * global_indentation) + "query()")
+    script += ('\n\nif __name__ == "__main__":\n' + (" " * global_indentation) + "query()")
   
     file = open('output.py',mode='w')
     file.write(script)

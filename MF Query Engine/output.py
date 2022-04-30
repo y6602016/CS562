@@ -46,8 +46,8 @@ def query():
   #= the data structure of mf_structure is hashtable                                  =
   #= group is a hashtable with grouping attributes as keys and mf_structure as values =
   #====================================================================================
-  mf_structure = {'prod': None, 'month': None, '1_count_quant': None, '2_count_quant': None, '0_avg_quant': None}
-  mf_type = {'prod': 'str', 'month': 'int', '1_count_quant': 'int', '2_count_quant': 'int', '0_avg_quant': 'float'}
+  mf_structure = {'cust': None, '1_sum_quant': None, '2_sum_quant': None, '3_sum_quant': None, '1_avg_quant': None, '3_avg_quant': None}
+  mf_type = {'cust': 'str', '1_sum_quant': 'int', '2_sum_quant': 'int', '3_sum_quant': 'int', '1_avg_quant': 'float', '3_avg_quant': 'float'}
   group = collections.defaultdict(lambda: dict(mf_structure))
 
 
@@ -58,21 +58,11 @@ def query():
   #=====================================================
 
   #1th Scan:
-  count_0_quant= collections.defaultdict(int)
   for row in rows:
     #Grouping attributes:
-    key_prod = row[1]
-    key_month = row[3]
-    quant = row[6]
-    if not group[(key_prod, key_month)]["prod"]:
-      group[(key_prod, key_month)]["prod"] = key_prod
-      group[(key_prod, key_month)]["month"] = key_month
-    if not group[(key_prod, key_month)]["0_avg_quant"]:
-      group[(key_prod, key_month)]["0_avg_quant"] = quant
-      count_0_quant[(key_prod, key_month)] += 1
-    else:
-      count_0_quant[(key_prod, key_month)] += 1
-      group[(key_prod, key_month)]["0_avg_quant"] += ((quant - group[(key_prod, key_month)]["0_avg_quant"])/count_0_quant[(key_prod, key_month)])
+    key_cust = row[0]
+    if not group[(key_cust)]["cust"]:
+      group[(key_cust)]["cust"] = key_cust
 
 
 
@@ -82,39 +72,79 @@ def query():
   #===================================================================
 
   #2th Scan:
-  for (key_prod, key_month) in group:
+  count_1_quant= collections.defaultdict(int)
+  count_3_quant= collections.defaultdict(int)
+  for (key_cust) in group:
     for row in rows:
       #Grouping attributes:
-      prod = row[1]
-      month = row[3]
+      cust = row[0]
 
       #Process Grouping Variable 1:
+      state = row[5]
       quant = row[6]
-      if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month + 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
-        if not group[(key_prod, key_month)]["1_count_quant"]:
-          group[(key_prod, key_month)]["1_count_quant"] = 1
-        else:
-          group[(key_prod, key_month)]["1_count_quant"] += 1
-
+      try:
+        if group[(key_cust)]["cust"] == cust and state == "NY":
+          if not group[(key_cust)]["1_sum_quant"]:
+            group[(key_cust)]["1_sum_quant"] = quant
+          else:
+            group[(key_cust)]["1_sum_quant"] += quant
+      except(TypeError):
+        pass
+      try:
+        if group[(key_cust)]["cust"] == cust and state == "NY":
+          if not group[(key_cust)]["1_avg_quant"]:
+            group[(key_cust)]["1_avg_quant"] = quant
+            count_1_quant[(key_cust)] += 1
+          else:
+            count_1_quant[(key_cust)] += 1
+            group[(key_cust)]["1_avg_quant"] += ((quant - group[(key_cust)]["1_avg_quant"])/count_1_quant[(key_cust)])
+      except(TypeError):
+        pass
 
       #Process Grouping Variable 2:
+      state = row[5]
+      month = row[3]
       quant = row[6]
-      if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month - 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
-        if not group[(key_prod, key_month)]["2_count_quant"]:
-          group[(key_prod, key_month)]["2_count_quant"] = 1
-        else:
-          group[(key_prod, key_month)]["2_count_quant"] += 1
+      try:
+        if group[(key_cust)]["cust"] == cust and state == "NJ" and month == 12:
+          if not group[(key_cust)]["2_sum_quant"]:
+            group[(key_cust)]["2_sum_quant"] = quant
+          else:
+            group[(key_cust)]["2_sum_quant"] += quant
+      except(TypeError):
+        pass
 
+      #Process Grouping Variable 3:
+      state = row[5]
+      quant = row[6]
+      try:
+        if group[(key_cust)]["cust"] == cust and state == "CT":
+          if not group[(key_cust)]["3_avg_quant"]:
+            group[(key_cust)]["3_avg_quant"] = quant
+            count_3_quant[(key_cust)] += 1
+          else:
+            count_3_quant[(key_cust)] += 1
+            group[(key_cust)]["3_avg_quant"] += ((quant - group[(key_cust)]["3_avg_quant"])/count_3_quant[(key_cust)])
+      except(TypeError):
+        pass
+      try:
+        if group[(key_cust)]["cust"] == cust and state == "CT":
+          if not group[(key_cust)]["3_sum_quant"]:
+            group[(key_cust)]["3_sum_quant"] = quant
+          else:
+            group[(key_cust)]["3_sum_quant"] += quant
+      except(TypeError):
+        pass
 
 
   #===================================================
   #= formatter process and output the query result   =
   #===================================================
   columns_type = []
-  columns_type.append(mf_type["prod"])
-  columns_type.append(mf_type["month"])
-  columns_type.append(mf_type["1_count_quant"])
-  columns_type.append(mf_type["2_count_quant"])
+  columns_type.append(mf_type["cust"])
+  columns_type.append(mf_type["1_sum_quant"])
+  columns_type.append(mf_type["2_sum_quant"])
+  columns_type.append(mf_type["3_sum_quant"])
 
   row_formatter = []
   title_formatter = []
@@ -130,12 +160,16 @@ def query():
       title_formatter.append("{:<15}")
   title_formatter = "|".join(title_formatter)
   row_formatter = "|".join(row_formatter)
-  print(title_formatter.format("prod", "month", "1_count_quant", "2_count_quant"))
+  print(title_formatter.format("cust", "1_sum_quant", "2_sum_quant", "3_sum_quant"))
 
   formatter = Formatter()
   for val in group.values():
-    data = {"col1": val["prod"], "col2": val["month"], "col3": val["1_count_quant"], "col4": val["2_count_quant"]}
-    print(formatter.format(row_formatter, **data))
+    try:
+      if val["1_sum_quant"] > 2 * val["2_sum_quant"] or val["1_avg_quant"] > val["3_avg_quant"]:
+          data = {"col1": val["cust"], "col2": val["1_sum_quant"], "col3": val["2_sum_quant"], "col4": val["3_sum_quant"]}
+          print(formatter.format(row_formatter, **data))
+    except(TypeError):
+      pass
 
 
 if __name__ == "__main__":

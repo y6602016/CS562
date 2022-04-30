@@ -1,51 +1,38 @@
 SELECT ATTRIBUTE(S):
-cust, prod, 0_avg_quant, 1_avg_quant, 2_avg_quant
+cust, 1_sum_quant, 2_sum_quant, 3_sum_quant
 NUMBER OF GROUPING VARIABLES(n):
-2
+3
 GROUPING ATTRIBUTES(V):
-cust, prod
+cust
 F-VECT([F]):
-0_avg_quant, 1_avg_quant, 2_avg_quant
+1_sum_quant, 1_avg_quant, 2_sum_quant, 3_avg_quant, 3_sum_quant
 SELECT CONDITION-VECT([σ]):
-1.cust == cust and 1.prod == prod and 1.year == 2018 and 1.quant > 0_avg_quant, 2.cust == cust and 2.prod == prod and 2.year == 2019 and 2.quant > 1_avg_quant
-HAVING_CONDITmmvhION(G):
+1.cust == cust and 1.state == "NY", 2.cust == cust and 2.state == "NJ", 3.cust == cust and 3.state == "CT"
+HAVING_CONDITION(G):
+1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant
 
 
 
 <Standard SQL>
 
 with t1 as(
-	select cust, prod, avg(quant) t1_avg
+	select cust, avg(quant) t1_avg, sum(quant) t1_sum
 	from sales
-	group by cust, prod
+	where state = 'NY'
+	group by cust
 ), 
 t2 as(
-	select s.cust, s.prod, avg(s.quant) t2_avg
-	from sales s, t1
-	where s.cust = t1.cust and s.prod = t1.prod
-	and s.year = 2018 and s.quant > t1.t1_avg
-	group by s.cust, s.prod
+	select cust, sum(quant) t2_sum
+	from sales
+	where state = 'NJ'
+	group by cust
 ),
 t3 as(
-	select s.cust, s.prod, avg(s.quant) t3_avg
-	from sales s, t2
-	where s.cust = t2.cust and s.prod = t2.prod 
-	and s.year = 2019 and s.quant > t2.t2_avg
-	group by s.cust, s.prod
-),
-t4 as (
-	select t1.cust, t1.prod, t1.t1_avg, t2.t2_avg
-	from t1
-	full outer join t2
-	on t1.cust = t2.cust and t1.prod = t2.prod 
+	select cust, avg(quant) t3_avg, sum(quant) t3_sum
+	from sales
+	where state = 'CT'
+	group by cust
 )
-select t4.cust, t4.prod, t4.t1_avg, t4.t2_avg, t3.t3_avg
-from t4
-full outer join t3
-on t4.cust = t3.cust and t4.prod = t3.prod
-order by cust
-
-
-
-
-
+select t1.cust, t1.t1_sum, t2.t2_sum, t3.t3_sum
+from t1, t2, t3
+where t1.cust = t2.cust and t1.cust = t3.cust and (t1.t1_sum > 2 * t2.t2_sum or t1.t1_avg > t3.t3_avg)
