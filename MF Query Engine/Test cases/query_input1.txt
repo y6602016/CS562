@@ -1,37 +1,49 @@
 SELECT ATTRIBUTE(S):
-cust, 1_avg_quant, 2_avg_quant, 3_avg_quant
+cust, 1_count_quant, 2_count_quant, 3_count_quant, 4_count_quant
 NUMBER OF GROUPING VARIABLES(n):
-3
+4
 GROUPING ATTRIBUTES(V):
 cust
 F-VECT([F]):
-1_avg_quant, 2_avg_quant, 3_avg_quant
+0_avg_quant, 1_avg_quant, 1_count_quant, 2_avg_quant, 2_count_quant, 3_avg_quant, 3_count_quant, 4_avg_quant, 4_count_quant
 SELECT CONDITION-VECT([σ]):
-1.cust == cust and 1.state == "NY", 2.cust == cust and 2.state == "NJ", 3.cust == cust and 3.state == "CT"
+1.cust == cust and 1.quant > 0_avg_quant, 2.cust == cust and 2.quant > 1_avg_quant, 3.cust == cust and 3.quant > 2_avg_quant, 4.cust == cust and 4.quant > 3_avg_quant
 HAVING_CONDITION(G):
+
 
 
 
 <Standard SQL>
 
 with t1 as(
-	select cust, avg(quant) t1_avg
+	select cust, avg(quant) t1_avg_quant
 	from sales
-	where state = 'NY'
 	group by cust
 ), 
 t2 as(
-	select cust, avg(quant) t2_avg
-	from sales
-	where state = 'NJ'
-	group by cust
+	select s.cust, avg(s.quant) t2_avg_quant, count(s.quant) t2_count_quant
+	from sales s, t1
+	where s.cust = t1.cust and s.quant > t1.t1_avg_quant
+	group by s.cust
 ),
 t3 as(
-	select cust, avg(quant) t3_avg
-	from sales
-	where state = 'CT'
-	group by cust
+	select s.cust, avg(s.quant) t3_avg_quant, count(s.quant) t3_count_quant
+	from sales s, t2
+	where s.cust = t2.cust and s.quant > t2.t2_avg_quant
+	group by s.cust
+),
+t4 as (
+	select s.cust, avg(s.quant) t4_avg_quant, count(s.quant) t4_count_quant
+	from sales s, t3
+	where s.cust = t3.cust and s.quant > t3.t3_avg_quant
+	group by s.cust
+),
+t5 as (
+	select s.cust, avg(s.quant) t5_avg_quant, count(s.quant) t5_count_quant
+	from sales s, t4
+	where s.cust = t4.cust and s.quant > t4.t4_avg_quant
+	group by s.cust
 )
-select t1.cust, t1.t1_avg, t2.t2_avg, t3.t3_avg
-from t1, t2, t3
-where t1.cust = t2.cust and t1.cust = t3.cust
+select t2.cust, t2.t2_count_quant, t3.t3_count_quant, t4.t4_count_quant, t5.t5_count_quant
+from t2, t3, t4, t5
+where t2.cust = t3.cust and t2.cust = t4.cust and t2.cust = t5.cust

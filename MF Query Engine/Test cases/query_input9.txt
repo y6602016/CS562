@@ -1,15 +1,14 @@
 SELECT ATTRIBUTE(S):
-prod, month, 1_count_quant, 2_count_quant
+prod, month, 1_avg_quant, 2_avg_quant
 NUMBER OF GROUPING VARIABLES(n):
 2
 GROUPING ATTRIBUTES(V):
 prod, month
 F-VECT([F]):
-0_avg_quant, 1_count_quant, 2_count_quant
+1_avg_quant, 2_avg_quant
 SELECT CONDITION-VECT([σ]):
-1.prod == prod and 1.month == month - 1 and 1.quant > 0_avg_quant, 2.prod == prod and 2.month == month + 1 and 2.quant > 0_avg_quant
+1.prod == prod and 1.month < month, 2.prod == prod and 2.month > month
 HAVING_CONDITION(G):
-
 
 
 
@@ -17,27 +16,20 @@ HAVING_CONDITION(G):
 <Standard SQL>
 
 with t1 as (
-	select prod, month, avg(quant) t1_avg
-	from sales
-	group by prod, month
+	select x.prod, x.month, avg(y.quant) smaller_avg
+	from sales x, sales y
+	where x.prod = y.prod and x.month > y.month
+	group by x.prod, x.month
 ),
 t2 as (
-	select t1.prod, t1.month, count(x.quant) t2_count
-	from t1
-	full outer join sales x
-	on x.prod = t1.prod and x.month = t1.month - 1 and x.quant > t1.t1_avg
-	group by t1.prod, t1.month
-
-), 
-t3 as (
-	select t1.prod, t1.month, count(x.quant) t3_count
-	from sales x, t1
-	where x.prod = t1.prod and x.month = t1.month + 1 and x.quant > t1.t1_avg
-	group by t1.prod, t1.month
+	select x.prod, x.month, avg(y.quant) larger_avg
+	from sales x, sales y
+	where x.prod = y.prod and x.month < y.month
+	group by x.prod, x.month
 
 )
-select t2.prod, t2.month, t2.t2_count, t3.t3_count
-from t2
-full outer join t3
-on t2.prod = t3.prod and t2.month = t3.month
+select t1.prod, t1.month, t1.smaller_avg, t2.larger_avg
+from t1
+full outer join t2
+on t1.prod = t2.prod and t1.month = t2.month
 order by prod
