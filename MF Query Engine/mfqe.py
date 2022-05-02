@@ -132,7 +132,7 @@ def connect():
     
     script += ('\n\nif __name__ == "__main__":\n' + (" " * global_indentation) + "query()")
   
-    file = open('output.py',mode='w')
+    file = open('query.py',mode='w')
     file.write(script)
     file.close()
     cur.close()
