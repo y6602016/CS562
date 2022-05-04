@@ -1,6 +1,6 @@
 import psycopg2
 import collections
-from config import config
+from Config.config import config
 from datetime import date as dt
 import string
 
@@ -46,8 +46,8 @@ def query():
   #= the data structure of mf_structure is hashtable                                  =
   #= group is a hashtable with grouping attributes as keys and mf_structure as values =
   #====================================================================================
-  mf_structure = {'cust': None, 'prod': None, '1.quant': None, '1.state': None, '1.date': None, '0_sum_quant': None, '1_min_quant': None, '1_sum_quant': None}
-  mf_type = {'cust': 'str', 'prod': 'str', '1.quant': 'int', '1.state': 'str', '1.date': 'dt', '0_sum_quant': 'int', '1_min_quant': 'int', '1_sum_quant': 'int'}
+  mf_structure = {'cust': None, 'prod': None, '1.quant': None, '1.state': None, '1.date': None, '1_sum_quant': None, '0_sum_quant': None, '1_max_quant': None}
+  mf_type = {'cust': 'str', 'prod': 'str', '1.quant': 'int', '1.state': 'str', '1.date': 'dt', '1_sum_quant': 'int', '0_sum_quant': 'int', '1_max_quant': 'int'}
   group = collections.defaultdict(lambda: dict(mf_structure))
 
 
@@ -86,21 +86,21 @@ def query():
       prod = row[1]
 
       #Process Grouping Variable 1:
+      state = row[5]
       date = row[7]
       quant = row[6]
-      state = row[5]
       try:
         if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
-          if not group[(key_cust, key_prod)]["1_min_quant"]:
-            group[(key_cust, key_prod)]["1_min_quant"] = quant
-            group[(key_cust, key_prod)]["1.state"] = state
+          if not group[(key_cust, key_prod)]["1_max_quant"]:
+            group[(key_cust, key_prod)]["1_max_quant"] = quant
             group[(key_cust, key_prod)]["1.quant"] = quant
+            group[(key_cust, key_prod)]["1.state"] = state
             group[(key_cust, key_prod)]["1.date"] = date
           else:
-            if quant < group[(key_cust, key_prod)]["1_min_quant"]:
-              group[(key_cust, key_prod)]["1_min_quant"] = quant
-              group[(key_cust, key_prod)]["1.state"] = state
+            if quant > group[(key_cust, key_prod)]["1_max_quant"]:
+              group[(key_cust, key_prod)]["1_max_quant"] = quant
               group[(key_cust, key_prod)]["1.quant"] = quant
+              group[(key_cust, key_prod)]["1.state"] = state
               group[(key_cust, key_prod)]["1.date"] = date
       except(TypeError):
         pass
@@ -123,6 +123,7 @@ def query():
   columns_type.append(mf_type["1.quant"])
   columns_type.append(mf_type["1.state"])
   columns_type.append(mf_type["1.date"])
+  columns_type.append(mf_type["1_sum_quant"])
 
   row_formatter = []
   title_formatter = []
@@ -138,13 +139,13 @@ def query():
       title_formatter.append("{:<15}")
   title_formatter = "|".join(title_formatter)
   row_formatter = "|".join(row_formatter)
-  print(title_formatter.format("cust", "prod", "1.quant", "1.state", "1.date"))
+  print(title_formatter.format("cust", "prod", "1.quant", "1.state", "1.date", "1_sum_quant"))
 
   formatter = Formatter()
   for val in group.values():
     try:
-      if val["1.quant"] == val["1_min_quant"]:
-          data = {"col1": val["cust"], "col2": val["prod"], "col3": val["1.quant"], "col4": val["1.state"], "col5": str(val["1.date"])}
+      if val["1.quant"] == val["1_max_quant"]:
+          data = {"col1": val["cust"], "col2": val["prod"], "col3": val["1.quant"], "col4": val["1.state"], "col5": str(val["1.date"]), "col6": val["1_sum_quant"]}
           print(formatter.format(row_formatter, **data))
     except(TypeError):
       pass

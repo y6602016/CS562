@@ -1,6 +1,6 @@
 import psycopg2
 import collections
-from config import config
+from Config.config import config
 from datetime import date as dt
 import string
 
