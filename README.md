@@ -45,6 +45,7 @@ There are some requirements of the input parameters. We assume:
 - Started with the definition of the grouping attributes
 - All conditions are in the same line, no new line
 - Order is same as the order of given grouping variables
+- Using '==' to express 'equal'
 <br />
 
 Some test inputs are provided in the "Test cases" folders. Please copy the part above "Standard SQL" and paste to query_input.txt. The query_input.txt file is the only file for input reading.
