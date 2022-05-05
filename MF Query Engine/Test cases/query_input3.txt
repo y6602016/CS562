@@ -9,7 +9,7 @@ F-VECT([F]):
 SELECT CONDITION-VECT([σ]):
 1.cust == cust and 1.prod == prod and 1.date > 2019-05-31 and 1.date < 2019-09-01
 HAVING_CONDITION(G):
-1_sum_quant * 10 > 0_sum_quant and 1.quant == 1_min_quant and 1_min_quant > 270
+1_sum_quant * 10 > 0_sum_quant and 1.quant == 1_min_quant and 1_min_quant > 150
 
 
 
@@ -34,7 +34,7 @@ t3 as(
 select t1.cust, t1.prod, t2.quant, t2.state, t2.date
 from t1, t2, t3
 where t1.cust = t2.cust and t1.prod = t2.prod and t1.cust = t3.cust and t1.prod = t3.prod
-and t3.t3_sum * 10 > t1.t1_sum and t3.t3_min > 270 and t3.t3_min = t2.quant 
+and t3.t3_sum * 10 > t1.t1_sum and t3.t3_min > 150 and t3.t3_min = t2.quant 
 
 
 

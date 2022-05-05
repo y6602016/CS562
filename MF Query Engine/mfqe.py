@@ -54,7 +54,7 @@ def connect():
       #=======================
       #= create mf-structure =
       #=======================
-      mf_structure, mf_type = convertMFStructure(operands, schema)
+      mf_structure, mf_type = convertMFStructure(S, F, G, schema)
       
       script += writeMFStructure(mf_structure, mf_type, global_indentation)
       
@@ -63,7 +63,7 @@ def connect():
       # = analyze the related columns of grouping variables that need to be updated in a scan =
       # = we divide the related columns to "rel attributes" and "rel aggregate functions"     =
       # = (1). Process each grouping variables rel attributes                                 =
-      group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(S, N, V, C, G)
+      group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(mf_structure, N, V, C, G)
       
       # = (2). Process each grouping variables rel aggregate functions                        =
       # =   1. aggregate function                                                             =

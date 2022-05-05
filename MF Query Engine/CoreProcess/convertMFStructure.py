@@ -1,17 +1,24 @@
-def convertMFStructure(input_file, schema):
-  """convert the S and F lists to mf_structure hashtable"""
+def convertMFStructure(S, F, G, schema):
+  """convert the S/F lists and G to mf_structure hashtable"""
 
   mf_structure = {}
   mf_type = {}
 
-  for attr in input_file["SELECT ATTRIBUTE(S)"]:
+  for attr in S:
     mf_structure[attr] = None
     getType(attr, mf_type, schema)
       
   
-  for attr in input_file["F-VECT([F])"]:
+  for attr in F:
     mf_structure[attr] = None
     getType(attr, mf_type, schema)
+
+  if len(G) and len(G[0]):
+    splitted = G[0].split()
+    for word in splitted:
+      if "." in word or "_" in word:
+        mf_structure[word] = None
+        getType(word, mf_type, schema)
   
 
   return mf_structure, mf_type

@@ -145,11 +145,11 @@ def processHaving(having, schema):
   return processed
 
 
-def processAttr(S, N, V, C, G):
+def processAttr(mf_structure, N, V, C, G):
   """process grouping variable's attributes used in S, C or G"""
 
   # if S contains gv's attr, it means the gv is narrowed to a single tuple
-  # we need to find out where the narrowing occurs. It may in C or in G
+  # we need to find out where the narrowing occurs. It may occur in C or in G
   # ex: 
   # in C: such that 1.length == 0_max_length
   # in G: having 1.length == 1_max_length
@@ -160,10 +160,10 @@ def processAttr(S, N, V, C, G):
   group_variable_attrs_max_aggregate = collections.defaultdict(list) # for the case in G
   group_variable_attrs_min_aggregate = collections.defaultdict(list) # for the case in G
 
-  project_set = set(S)
+  project_set = set([attr for attr in mf_structure if "." in attr])
 
-  for grout_attr in V:
-    project_set.remove(grout_attr)
+  # for grout_attr in V:
+  #   project_set.remove(grout_attr)
   
   for i in range(1, int(N[0]) + 1):
     attr_list = []
@@ -193,7 +193,7 @@ def processAttr(S, N, V, C, G):
           if "max" in compared or "min" in compared:
             group_variable_attrs[i] = attr_list
     
-    # check gv in G or not if not in C
+    # check gv in G or not. if not, it's in C
     if not group_variable_attrs[i]:
       for attr in attr_list:
         to_find_string = attr + " == "
