@@ -160,7 +160,7 @@ def processAttr(mf_structure, N, V, C, G):
   group_variable_attrs_max_aggregate = collections.defaultdict(list) # for the case in G
   group_variable_attrs_min_aggregate = collections.defaultdict(list) # for the case in G
 
-  project_set = set([attr for attr in mf_structure if "." in attr])
+  all_attr_set = set([attr for attr in mf_structure if "." in attr])
 
   # for grout_attr in V:
   #   project_set.remove(grout_attr)
@@ -169,13 +169,13 @@ def processAttr(mf_structure, N, V, C, G):
     attr_list = []
     prefix = str(i) + "."
 
-    for attr in project_set:
+    for attr in all_attr_set:
       # extract the gv's attr from S
       if prefix in attr:
         attr_list.append(attr)
     
     for attr in attr_list:
-      project_set.remove(attr)
+      all_attr_set.remove(attr)
     
     # check gv in C or not
     c = C[i - 1]
