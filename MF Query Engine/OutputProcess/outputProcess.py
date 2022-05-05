@@ -73,6 +73,8 @@ def writeFirstScan(V, F, schema, script, global_indentation):
       script += countScript(group_attr, f, global_indentation, None)
     elif f[0] == "sum":
       script += sumScript(group_attr, f, global_indentation, None)
+    else:
+      raise (Exception("Unvalid aggregation function"))
 
 
   return script
@@ -136,6 +138,8 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs,
           script += countScript(group_attr, f, global_indentation, processed_condition)
         elif f[0] == "sum":
           script += sumScript(group_attr, f, global_indentation, processed_condition)
+        else:
+          raise (Exception("Unvalid aggregation function"))
     
   return script
 
@@ -168,13 +172,15 @@ def writeProject(S, G, schema, script, global_indentation):
   global_indentation += 2
 
   all_output_attr = ""
+
   if len(G) and len(G[0]):
     all_output_attr += ((" " * global_indentation) + "try:\n")
     global_indentation += 2
     having = processHaving(G[0], schema)
     all_output_attr += ((" " * global_indentation) + "if " + having + ":\n")
-    global_indentation += 4
+    global_indentation += 2
 
+  
   all_output_attr += ((" " * global_indentation) + "data = {") 
   is_date = False
   for i, s in enumerate(S):
@@ -203,12 +209,12 @@ def writeProject(S, G, schema, script, global_indentation):
   all_output_attr += ("\n" + (" " * global_indentation) + "print(formatter.format(row_formatter, **data))\n")
 
   if len(G) and len(G[0]):
-    global_indentation -= 6
+    global_indentation -= 4
     all_output_attr += ((" " * global_indentation) + "except(TypeError):\n")
     global_indentation += 2
     all_output_attr += ((" " * global_indentation) + "pass\n")
     
-  global_indentation -= 6
+  global_indentation -= 8
   script += ((" " * global_indentation) + all_output_attr)
 
   return script

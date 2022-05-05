@@ -1,0 +1,11 @@
+
+  except (Exception, psycopg2.DatabaseError) as error:
+    print("Error detected:")
+    print(error)
+  finally:
+    if conn is not None:
+      conn.close()
+
+
+if __name__ == "__main__":
+  query()

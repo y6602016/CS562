@@ -34,18 +34,21 @@ def getType(attr, mf_type, schema):
     'float': "float",
   }
 
-  if "." in attr: # case1: normal attribute
-      splitted = attr.split(".")
-      mf_type[attr] = type[schema[splitted[1]][1]]
-  elif "_" in attr: # case2: aggregation function
-    splitted = attr.split("_")
-    if splitted[1] == "count":
-      mf_type[attr] = "int"
-    elif splitted[1] == "avg":
-      mf_type[attr] = "float"
-    else:
-      mf_type[attr] = type[schema[splitted[2]][1]]
-  else: # case3: grouping attribute
-    mf_type[attr] = type[schema[attr][1]]
+  try:
+    if "." in attr: # case1: normal attribute
+        splitted = attr.split(".")
+        mf_type[attr] = type[schema[splitted[1]][1]]
+    elif "_" in attr: # case2: aggregation function
+      splitted = attr.split("_")
+      if splitted[1] == "count":
+        mf_type[attr] = "int"
+      elif splitted[1] == "avg":
+        mf_type[attr] = "float"
+      else:
+        mf_type[attr] = type[schema[splitted[2]][1]]
+    else: # case3: grouping attribute
+      mf_type[attr] = type[schema[attr][1]]
+  except (KeyError) as error:
+    raise(KeyError("Unvalid column " + str(error)))
 
 

@@ -29,14 +29,15 @@ class Formatter(string.Formatter):
             else: raise
 
 def query():
-  #===================================================
-  #= connnect to db and use the cursor to query data =
-  #===================================================
-  params = config()
-  conn = psycopg2.connect(**params)
-  cursor = conn.cursor()
+  try:
+    #===================================================
+    #= connnect to db and use the cursor to query data =
+    #===================================================
+    params = config()
+    conn = psycopg2.connect(**params)
+    cursor = conn.cursor()
 
-  query = 'select * from sales'
-  cursor.execute(query)
-  rows = cursor.fetchall()
+    query = 'select * from sales'
+    cursor.execute(query)
+    rows = cursor.fetchall()
   

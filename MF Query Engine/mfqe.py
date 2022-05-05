@@ -1,5 +1,6 @@
 import psycopg2
 import collections
+import pathlib
 from Config.config import config
 from CoreProcess.convertMFStructure import *
 from CoreProcess.groupVariableProcess import *
@@ -8,9 +9,11 @@ from InputProcess.inputProcess import *
 from OutputProcess.outputProcess import *
 
 
+template_path = str(pathlib.Path(__file__).parent.resolve())
+
 def connect():
-  global_indentation = 2
-  template = open('template.txt',mode='r')
+  global_indentation = 4
+  template = open(template_path + '/Template/template_header.txt',mode='r')
   script = template.read() + "\n"
   template.close()
 
@@ -127,10 +130,12 @@ def connect():
       script += ((" " * global_indentation) + "#= formatter process and output the query result   =\n")
       script += ((" " * global_indentation) + "#===================================================\n")
       script = writeProject(S, G, schema, script, global_indentation)
-      
-
     
-    script += ('\n\nif __name__ == "__main__":\n' + (" " * global_indentation) + "query()")
+
+
+    template_footer = open(template_path + '/Template/template_footer.txt',mode='r')
+    script += template_footer.read() + "\n"
+    template.close()
   
     file = open('query.py',mode='w')
     file.write(script)
@@ -138,6 +143,7 @@ def connect():
     cur.close()
 
   except (Exception, psycopg2.DatabaseError) as error:
+    print("Error detected:")
     print(error)
   finally:
     if conn is not None:
