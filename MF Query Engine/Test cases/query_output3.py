@@ -1,7 +1,7 @@
 import psycopg2
 import collections
 from Config.config import config
-from datetime import date as dt
+from datetime import date, datetime
 import string
 
 #==============================================
@@ -48,7 +48,7 @@ def query():
     #= group is a hashtable with grouping attributes as keys and mf_structure as values =
     #====================================================================================
     mf_structure = {'cust': None, 'prod': None, '1.quant': None, '1.state': None, '1.date': None, '0_sum_quant': None, '1_min_quant': None, '1_sum_quant': None}
-    mf_type = {'cust': 'str', 'prod': 'str', '1.quant': 'int', '1.state': 'str', '1.date': 'dt', '0_sum_quant': 'int', '1_min_quant': 'int', '1_sum_quant': 'int'}
+    mf_type = {'cust': 'str', 'prod': 'str', '1.quant': 'int', '1.state': 'str', '1.date': 'date', '0_sum_quant': 'int', '1_min_quant': 'int', '1_sum_quant': 'int'}
     group = collections.defaultdict(lambda: dict(mf_structure))
 
 
@@ -87,26 +87,26 @@ def query():
         prod = row[1]
 
         #Process Grouping Variable 1:
-        date = row[7]
-        quant = row[6]
         state = row[5]
+        quant = row[6]
+        date = row[7]
         try:
-          if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
+          if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > date.fromisoformat("2019-05-31") and date < date.fromisoformat("2019-09-01"):
             if not group[(key_cust, key_prod)]["1_min_quant"]:
               group[(key_cust, key_prod)]["1_min_quant"] = quant
-              group[(key_cust, key_prod)]["1.quant"] = quant
               group[(key_cust, key_prod)]["1.state"] = state
+              group[(key_cust, key_prod)]["1.quant"] = quant
               group[(key_cust, key_prod)]["1.date"] = date
             else:
               if quant < group[(key_cust, key_prod)]["1_min_quant"]:
                 group[(key_cust, key_prod)]["1_min_quant"] = quant
-                group[(key_cust, key_prod)]["1.quant"] = quant
                 group[(key_cust, key_prod)]["1.state"] = state
+                group[(key_cust, key_prod)]["1.quant"] = quant
                 group[(key_cust, key_prod)]["1.date"] = date
         except(TypeError):
           pass
         try:
-          if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > dt.fromisoformat("2019-05-31") and date < dt.fromisoformat("2019-09-01"):
+          if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > date.fromisoformat("2019-05-31") and date < date.fromisoformat("2019-09-01"):
             if not group[(key_cust, key_prod)]["1_sum_quant"]:
               group[(key_cust, key_prod)]["1_sum_quant"] = quant
             else:
@@ -149,7 +149,7 @@ def query():
           print(formatter.format(row_formatter, **data))
       except(TypeError):
         pass
-      
+
   except (Exception, psycopg2.DatabaseError) as error:
     print("Error detected:")
     print(error)

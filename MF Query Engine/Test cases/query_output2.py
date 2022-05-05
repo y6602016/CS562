@@ -1,7 +1,7 @@
 import psycopg2
 import collections
 from Config.config import config
-from datetime import date as dt
+from datetime import date, datetime
 import string
 
 #==============================================
@@ -48,7 +48,7 @@ def query():
     #= group is a hashtable with grouping attributes as keys and mf_structure as values =
     #====================================================================================
     mf_structure = {'cust': None, 'prod': None, '1.quant': None, '1.state': None, '1.date': None, '0_max_quant': None}
-    mf_type = {'cust': 'str', 'prod': 'str', '1.quant': 'int', '1.state': 'str', '1.date': 'dt', '0_max_quant': 'int'}
+    mf_type = {'cust': 'str', 'prod': 'str', '1.quant': 'int', '1.state': 'str', '1.date': 'date', '0_max_quant': 'int'}
     group = collections.defaultdict(lambda: dict(mf_structure))
 
 
@@ -88,13 +88,13 @@ def query():
         prod = row[1]
 
         #Process Grouping Variable 1:
-        quant = row[6]
         date = row[7]
+        quant = row[6]
         state = row[5]
         try:
           if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and quant == group[(key_cust, key_prod)]["0_max_quant"]:
-            group[(key_cust, key_prod)]["1.quant"] = quant
             group[(key_cust, key_prod)]["1.date"] = date
+            group[(key_cust, key_prod)]["1.quant"] = quant
             group[(key_cust, key_prod)]["1.state"] = state
         except(TypeError):
           pass
@@ -130,7 +130,7 @@ def query():
     for val in group.values():
       data = {"col1": val["cust"], "col2": val["prod"], "col3": val["1.quant"], "col4": val["1.state"], "col5": str(val["1.date"])}
       print(formatter.format(row_formatter, **data))
-      
+
   except (Exception, psycopg2.DatabaseError) as error:
     print("Error detected:")
     print(error)

@@ -1,7 +1,7 @@
 import psycopg2
 import collections
 from Config.config import config
-from datetime import date as dt
+from datetime import date, datetime
 import string
 
 #==============================================
@@ -91,8 +91,8 @@ def query():
         prod = row[1]
 
         #Process Grouping Variable 1:
-        quant = row[6]
         year = row[4]
+        quant = row[6]
         try:
           if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and year == 2018 and quant > group[(key_cust, key_prod)]["0_avg_quant"]:
             if not group[(key_cust, key_prod)]["1_avg_quant"]:
@@ -113,8 +113,8 @@ def query():
         prod = row[1]
 
         #Process Grouping Variable 2:
-        quant = row[6]
         year = row[4]
+        quant = row[6]
         try:
           if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and year == 2019 and quant > group[(key_cust, key_prod)]["1_avg_quant"]:
             if not group[(key_cust, key_prod)]["2_avg_quant"]:
@@ -157,7 +157,7 @@ def query():
     for val in group.values():
       data = {"col1": val["cust"], "col2": val["prod"], "col3": val["0_avg_quant"], "col4": val["1_avg_quant"], "col5": val["2_avg_quant"]}
       print(formatter.format(row_formatter, **data))
-      
+
   except (Exception, psycopg2.DatabaseError) as error:
     print("Error detected:")
     print(error)

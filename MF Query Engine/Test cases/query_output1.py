@@ -1,7 +1,7 @@
 import psycopg2
 import collections
 from Config.config import config
-from datetime import date as dt
+from datetime import date, datetime
 import string
 
 #==============================================
@@ -223,7 +223,7 @@ def query():
     for val in group.values():
       data = {"col1": val["cust"], "col2": val["1_count_quant"], "col3": val["2_count_quant"], "col4": val["3_count_quant"], "col5": val["4_count_quant"]}
       print(formatter.format(row_formatter, **data))
-      
+
   except (Exception, psycopg2.DatabaseError) as error:
     print("Error detected:")
     print(error)

@@ -1,7 +1,7 @@
 import psycopg2
 import collections
 from Config.config import config
-from datetime import date as dt
+from datetime import date, datetime
 import string
 
 #==============================================
@@ -102,9 +102,10 @@ def query():
           pass
 
         #Process Grouping Variable 2:
+        state = row[5]
         quant = row[6]
         try:
-          if group[(key_cust)]["cust"] == cust and quant > group[(key_cust)]["0_avg_quant"]:
+          if group[(key_cust)]["cust"] == cust and quant > group[(key_cust)]["0_avg_quant"] and state == "NY":
             if not group[(key_cust)]["2_avg_quant"]:
               group[(key_cust)]["2_avg_quant"] = quant
               count_2_quant[(key_cust)] += 1
