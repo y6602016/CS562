@@ -149,7 +149,7 @@ def query():
     row_formatter = []
     title_formatter = []
     for i, t in enumerate(columns_type):
-      if t == "str" or t == "dt":
+      if t == "str" or t == "date" or t == "datetime":
         row_formatter.append("{col" +str(i + 1) + ":<15}")
         title_formatter.append("{:<15}")
       elif t == "float":

@@ -88,14 +88,14 @@ def query():
         prod = row[1]
 
         #Process Grouping Variable 1:
-        date = row[7]
-        quant = row[6]
         state = row[5]
+        quant = row[6]
+        date = row[7]
         try:
           if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and quant == group[(key_cust, key_prod)]["0_max_quant"]:
+            group[(key_cust, key_prod)]["1.state"] = state
             group[(key_cust, key_prod)]["1.date"] = date
             group[(key_cust, key_prod)]["1.quant"] = quant
-            group[(key_cust, key_prod)]["1.state"] = state
         except(TypeError):
           pass
 
@@ -113,7 +113,7 @@ def query():
     row_formatter = []
     title_formatter = []
     for i, t in enumerate(columns_type):
-      if t == "str" or t == "dt":
+      if t == "str" or t == "date" or t == "datetime":
         row_formatter.append("{col" +str(i + 1) + ":<15}")
         title_formatter.append("{:<15}")
       elif t == "float":

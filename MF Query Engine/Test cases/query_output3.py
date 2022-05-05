@@ -87,22 +87,22 @@ def query():
         prod = row[1]
 
         #Process Grouping Variable 1:
-        state = row[5]
         quant = row[6]
+        state = row[5]
         date = row[7]
         try:
           if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > date.fromisoformat("2019-05-31") and date < date.fromisoformat("2019-09-01"):
             if not group[(key_cust, key_prod)]["1_min_quant"]:
               group[(key_cust, key_prod)]["1_min_quant"] = quant
-              group[(key_cust, key_prod)]["1.state"] = state
               group[(key_cust, key_prod)]["1.quant"] = quant
               group[(key_cust, key_prod)]["1.date"] = date
+              group[(key_cust, key_prod)]["1.state"] = state
             else:
               if quant < group[(key_cust, key_prod)]["1_min_quant"]:
                 group[(key_cust, key_prod)]["1_min_quant"] = quant
-                group[(key_cust, key_prod)]["1.state"] = state
                 group[(key_cust, key_prod)]["1.quant"] = quant
                 group[(key_cust, key_prod)]["1.date"] = date
+                group[(key_cust, key_prod)]["1.state"] = state
         except(TypeError):
           pass
         try:
@@ -128,7 +128,7 @@ def query():
     row_formatter = []
     title_formatter = []
     for i, t in enumerate(columns_type):
-      if t == "str" or t == "dt":
+      if t == "str" or t == "date" or t == "datetime":
         row_formatter.append("{col" +str(i + 1) + ":<15}")
         title_formatter.append("{:<15}")
       elif t == "float":

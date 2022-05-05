@@ -5,7 +5,7 @@ def formatterScript(global_indentation):
   type_formatter += ((" " * global_indentation) + 'title_formatter = []\n')
   type_formatter += ((" " * global_indentation) + "for i, t in enumerate(columns_type):\n")
   global_indentation += 2
-  type_formatter += ((" " * global_indentation) + 'if t == "str" or t == "dt":\n')
+  type_formatter += ((" " * global_indentation) + 'if t == "str" or t == "date" or t == "datetime":\n')
   global_indentation += 2
   type_formatter += ((" " * global_indentation) + 'row_formatter.append("{col" +str(i + 1) + ":<15}")\n')
   type_formatter += ((" " * global_indentation) + 'title_formatter.append("{:<15}")\n')
