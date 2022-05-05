@@ -1,5 +1,5 @@
 def avgScript(group_attr, func, group_variable, global_indentation, condition):
-  """write the script of average aggregation function"""
+  """The function to write the script of average aggregation function"""
 
   avg = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
@@ -32,7 +32,7 @@ def avgScript(group_attr, func, group_variable, global_indentation, condition):
 
 
 def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_indentation, condition):
-  """write the script of max aggregation function"""
+  """The function to write the script of max aggregation function"""
   
   max = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
@@ -71,7 +71,7 @@ def maxScript(group_attr, func, group_variable_attrs_max_aggregate, global_inden
 
 
 def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_indentation, condition):
-  """write the script of min aggregation function"""
+  """The function to write the script of min aggregation function"""
   
   min = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
@@ -111,7 +111,7 @@ def minScript(group_attr, func, group_variable_attrs_min_aggregate, global_inden
 
 
 def countScript(group_attr, func, global_indentation, condition):
-  """write the script of count aggregation function"""
+  """The function to write the script of count aggregation function"""
   
   count = ""
   group_key = "group[" + group_attr + ']["'  + func[2] + '"]'
@@ -139,7 +139,7 @@ def countScript(group_attr, func, global_indentation, condition):
   return count
 
 def sumScript(group_attr, func, global_indentation, condition):
-  """write the script of sum aggregation function"""
+  """The function to write the script of sum aggregation function"""
   
   sum = ""
 
@@ -168,7 +168,7 @@ def sumScript(group_attr, func, global_indentation, condition):
   return sum
 
 def noAggregate(group_attr, attrs, global_indentation, condition):
-  """write the script without aggregation function"""
+  """The function to write the script without aggregation function"""
   
   update = ""
 

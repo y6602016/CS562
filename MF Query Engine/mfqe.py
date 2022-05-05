@@ -8,6 +8,21 @@ from CoreProcess.schemaProcess import *
 from InputProcess.inputProcess import *
 from OutputProcess.outputProcess import *
 
+"""
+The main program of MF/EMF Query Engine
+The program reads the input operators from "query_input.txt" file and generate an output "query.py" program
+which can be executed to project data.
+
+The program analyzes and parses the input operators, and leverages the algorithm to implement and optimize
+the generated program. The program leverages hashtable to store mf_structure, and based on the number of 
+grouping variables and their dependency map, the generated program executes 1 or more scans to update the
+mf_structure hashtable value. Finally, the program utilizes the formatter to output the value based on the
+corresponding data types.
+
+Please read "Readme.txt" file for more details of instructions.
+"""
+
+
 
 template_path = str(pathlib.Path(__file__).parent.resolve())
 
@@ -66,7 +81,7 @@ def connect():
       # = analyze the related columns of grouping variables that need to be updated in a scan =
       # = we divide the related columns to "rel attributes" and "rel aggregate functions"     =
       # = (1). Process each grouping variables rel attributes                                 =
-      group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(mf_structure, N, V, C, G)
+      group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate = processAttr(mf_structure, N, C, G)
       
       # = (2). Process each grouping variables rel aggregate functions                        =
       # =   1. aggregate function                                                             =
@@ -84,7 +99,7 @@ def connect():
       script += ((" " * global_indentation) + "#= and aggregatation function of grouping variable_0 =\n")
       script += ((" " * global_indentation) + "#=====================================================\n")
       script += ("\n" + (" " * global_indentation) + "#1th Scan:\n")
-      script = writeFirstScan(V, F, schema, script, global_indentation)
+      script = writeFirstScan(V, F, schema, script, global_indentation, group_variable_fs)
       
 
       #====================================================================================
@@ -110,9 +125,9 @@ def connect():
       while queue:
         q_length = len(queue)
         to_be_scan = []
-        for i in range(q_length):
+        for _ in range(q_length):
           val = queue.popleft()
-          to_be_scan.append(val)
+          to_be_scan.append(val) # popped group variables from the queue can be scanned
           for next_val in edges[val]:
             in_degrees[next_val] -= 1
             if in_degrees[next_val] == 0:
@@ -131,7 +146,6 @@ def connect():
       script += ((" " * global_indentation) + "#===================================================\n")
       script = writeProject(S, G, schema, script, global_indentation)
     
-
 
     template_footer = open(template_path + '/Template/template_footer.txt',mode='r')
     script += template_footer.read() + "\n"

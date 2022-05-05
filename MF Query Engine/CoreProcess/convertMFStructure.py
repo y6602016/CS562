@@ -1,5 +1,5 @@
 def convertMFStructure(S, F, G, schema):
-  """convert the S/F lists and G to mf_structure hashtable"""
+  """The function to convert the S/F lists and G to mf_structure hashtable"""
 
   mf_structure = {}
   mf_type = {}
@@ -25,12 +25,15 @@ def convertMFStructure(S, F, G, schema):
 
 
 def getType(attr, mf_type, schema):
-  # type only works against the db of the project, it can expand to more types
+  """The function to get columns data type"""
+
+  # type only works against the db of the project, it can expand to more types 
   type = { 
     'character varying': "str",
     'character': "str",
     'integer': "int",
-    'date': "dt",
+    'date': "date",
+    'datetime': 'datetime',
     'float': "float",
   }
 

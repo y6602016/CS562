@@ -1,9 +1,9 @@
 import collections
-from datetime import date
 
 def processRel(N, C, F):
-  """process grouping variable's aggregation functions used in S, C or G, and create the depending map"""
+  """The function to parse grouping variable's aggregation functions used in S, C or G, and create the depending map"""
 
+  # parse aggregation funcmtion into the format of {grouping variable: [('sum', 'quant', '0_sum_quant')]}
   group_variable_fs = collections.defaultdict(list)
   depend_map = collections.defaultdict(set)
 
@@ -31,9 +31,18 @@ def processRel(N, C, F):
 
 
 def processCondition(V, condition, group_attr, schema):
-  """process each grouping variable's condition statement"""
+  """The function to parse each grouping variable's condition statement, parse mf_structure key and special data type"""
 
+  # parse condition statement with hashtable key and convert specail data type such as "date"
+  # before processed:
+  # 1.cust == cust and 1.prod == prod and 1.date > 2019-09-30 and 1.date < 2019-12-01
+  # after processed: 
+  # group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > date.fromisoformat("2019-09-30") and date < date.fromisoformat("2019-12-01")
+  
   new_processed = []
+
+  # such_that_attr containse the attributes used in condition statement, ex: "date" in 1.date > 2019-09-30 and 1.date < 2019-12-01
+  # theses attributes may not be in mf_structure
   such_that_attr = []
 
   group_variable = condition[0]
@@ -49,13 +58,14 @@ def processCondition(V, condition, group_attr, schema):
 
 
   splitted = condition.split(" ")
+  special_type = None
   special_type_index = -1
   emf_process_index = -1
+
   for i, word in enumerate(splitted):
     temp_word = word
     word = word.replace("(", "")
     word = word.replace(")", "")
-
     processed = ""
     if "." in word:
       attr = word.split(".")[1]
@@ -63,17 +73,27 @@ def processCondition(V, condition, group_attr, schema):
         processed = f'group[{group_attr}]["' + attr + '"]'
         if is_emf:
           emf_process_index = i
-      elif attr in schema:
+      # the attributes of grouping variable appear in condition statement should be recorded
+      # such that we can update the attributes in the scan
+      elif attr in schema: 
         such_that_attr.append(attr)
         processed = attr
-        if schema[attr][1] == 'date':
+        if schema[attr][1] == 'date': # if the attribute is special type, mark it then process it later
+          special_type = 'date'
+          special_type_index = i
+        elif schema[attr][1] == 'datetime':
+          special_type = 'datetime'
           special_type_index = i
     elif "_" in word:
       processed = f'group[{group_attr}]["' + word + '"]'
     else:
-      if special_type_index > -1 and i == special_type_index + 2:
-        processed = f'dt.fromisoformat("' + word + '")'
+      if special_type_index > -1 and i == special_type_index + 2: # process the special type object to be compared with
+        if special_type == 'date':
+          processed = f'date.fromisoformat("' + word + '")'
+        elif special_type == 'datetime':
+          processed = f'datetime.fromisoformat("' + word + '")'
         special_type_index = -1
+        special_type = None
       elif emf_process_index > -1:
         if i == emf_process_index + 1 and (word == ">" or word == "<"):
           if word == ">":
@@ -107,11 +127,20 @@ def processCondition(V, condition, group_attr, schema):
 
 
 def processHaving(having, schema):
-  """process the having statement"""
+  """The function to parse having condition statement, parse mf_structure key and special data type"""
+
+  # parse condition statement with hashtable key and convert specail data type such as "date"
+  # before processed:
+  # 1_sum_quant * 10 > 0_sum_quant and 1.quant == 1_min_quant and 1_min_quant > 150
+  # after processed:
+  # val["1_sum_quant"] * 10 > val["0_sum_quant"] and val["1.quant"] == val["1_min_quant"] and val["1_min_quant"] > 150
+
 
   new_processed = []
   splitted = having.split(" ")
   special_type_index = -1
+  special_type = None
+
   for i, word in enumerate(splitted):
     temp_word = word
     word = word.replace("(", "")
@@ -121,13 +150,21 @@ def processHaving(having, schema):
     if "." in word:
       processed = f'val["' + word + '"]'
       attr = word.split(".")[1]
-      if schema[attr][1] == 'date':
+      if schema[attr][1] == 'date': # if the attribute is special type, mark it then process it later
+          special_type = 'date'
+          special_type_index = i
+      elif schema[attr][1] == 'datetime':
+        special_type = 'datetime'
         special_type_index = i
     elif "_" in word:
       processed = f'val["' + word + '"]'
     else:
       if special_type_index > -1 and i == special_type_index + 2:
-        processed = f'dt.fromisoformat("' + word + '")'
+        if special_type == 'date':
+          processed = f'date.fromisoformat("' + word + '")'
+        elif special_type == 'datetime':
+          processed = f'datetime.fromisoformat("' + word + '")'
+        special_type = None
         special_type_index = -1
       else:
         processed = word
@@ -145,8 +182,8 @@ def processHaving(having, schema):
   return processed
 
 
-def processAttr(mf_structure, N, V, C, G):
-  """process grouping variable's attributes used in S, C or G"""
+def processAttr(mf_structure, N, C, G):
+  """The function to process grouping variable's attributes used in S, C or G"""
 
   # if S contains gv's attr, it means the gv is narrowed to a single tuple
   # we need to find out where the narrowing occurs. It may occur in C or in G
@@ -161,23 +198,20 @@ def processAttr(mf_structure, N, V, C, G):
   group_variable_attrs_min_aggregate = collections.defaultdict(list) # for the case in G
 
   all_attr_set = set([attr for attr in mf_structure if "." in attr])
-
-  # for grout_attr in V:
-  #   project_set.remove(grout_attr)
   
   for i in range(1, int(N[0]) + 1):
     attr_list = []
     prefix = str(i) + "."
 
     for attr in all_attr_set:
-      # extract the gv's attr from S
+      # extract the group variable's attr from mf_structure
       if prefix in attr:
         attr_list.append(attr)
     
     for attr in attr_list:
       all_attr_set.remove(attr)
-    
-    # check gv in C or not
+
+    # check group variable in C or not
     c = C[i - 1]
     for attr in attr_list:
       to_find_string = attr + " == "
@@ -188,12 +222,12 @@ def processAttr(mf_structure, N, V, C, G):
           while end < len(c) and c[end] != " ":
             end += 1
           compared = c[start:end]
-
-          # if gv's attrs is narrowed in C
+          # if group variable's attrs is narrowed in C
           if "max" in compared or "min" in compared:
             group_variable_attrs[i] = attr_list
+
     
-    # check gv in G or not. if not, it's in C
+    # check group variable in G or not. if not, it's in C
     if not group_variable_attrs[i]:
       for attr in attr_list:
         to_find_string = attr + " == "
@@ -206,7 +240,7 @@ def processAttr(mf_structure, N, V, C, G):
               end += 1
             compared = having[start:end]
 
-            # if gv's attrs is narrowed in G
+            # if group variable's attrs is narrowed in G
             if "max" in compared:
               group_variable_attrs_max_aggregate[i] = attr_list
               group_variable_attrs[i] = attr_list

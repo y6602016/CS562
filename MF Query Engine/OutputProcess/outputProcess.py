@@ -3,7 +3,7 @@ from CoreProcess.groupVariableProcess import *
 from OutputProcess.formatter import *
 
 def writeMFStructure(mf_structure, mf_type, global_indentation):
-  """write the script of mf_structure and group hashtable used for scanning"""
+  """The function to write the script of mf_structure and group hashtable used for scanning"""
 
   structure = ("\n\n" + (" " * global_indentation) + "#====================================================================================\n")
   structure += ((" " * global_indentation) + "#= the data structure of mf_structure is hashtable                                  =\n")
@@ -20,21 +20,15 @@ def writeMFStructure(mf_structure, mf_type, global_indentation):
 
   return structure
 
-def writeFirstScan(V, F, schema, script, global_indentation):
-  """write the script of first initial scan"""
+def writeFirstScan(V, F, schema, script, global_indentation, group_variable_fs):
+  """The function to write the script of first initial scan"""
 
-  # process F lists, ex:
-  # F = ["0_avg_quant", "0_max_quant"]
-  # F0 = [("avg", "quant", "0_avg_quant"), ("max", "quant", "0_max_quant")]
-  F0 = []
-  for f in F:
-    splitted = f.split("_")
-    if splitted[0] == "0":
-      F0.append((splitted[1], splitted[2], f))
-  
+  # the function writes the script of the first scan, the first scan fill grouping attribute into the hashmap
+  # and process the aggregation function of the grouping variable 0
+
   key_V = ["key_" + group_attr for group_attr in V]
   group_attr = "(" + ", ".join(key_V) + ")"
-
+  F0 = [(f[0], f[1], f[2] )for f in group_variable_fs[0]]
 
   for f in F0:
     if "avg" in f[0]:
@@ -81,8 +75,11 @@ def writeFirstScan(V, F, schema, script, global_indentation):
 
 def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs, 
   group_variable_attrs, group_variable_attrs_max_aggregate, group_variable_attrs_min_aggregate, script, global_indentation):
-  """write the script of scans of grouping variables"""
+  """The function to write the script of scans of grouping variables"""
 
+  # the function writes the script of the scan for the grouping variables, multiple variables may be processed at the
+  # same scan if they have no dependence.
+  
   key_V = ["key_" + group_attr for group_attr in V]
   group_attr = "(" + ", ".join(key_V) + ")"
 
@@ -108,15 +105,17 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs,
       for attr in V:
         script += ((" " * global_indentation) + attr + " = row[" + schema[attr][0] + "]\n")
 
+    # parse condition and extract the attributes used in C
     processed_condition, such_that_attr = processCondition(V, C[group_variable - 1], group_attr, schema)
     
-    # extract aggregated attributes and attr used in such that clause (ex: quant)
+    # extract aggregated attributes and attributed used in C (ex: quant)
     # attrs can be from F, C, S
-    
     script += (f"\n" + (" " * global_indentation) + f"#Process Grouping Variable {group_variable}:\n")
-    fun_attr_set = set(f[1] for f in group_variable_fs[group_variable])
-    required_attr_set = fun_attr_set.union(set(such_that_attr))
+    fun_attr_set = set(f[1] for f in group_variable_fs[group_variable]) # extract aggregated attributes (From F)
+    required_attr_set = fun_attr_set.union(set(such_that_attr)) # extract attributed used in C (From C)
+    # extract grouping variable's attrribute (those attributes are needed to updated during scans)
     required_attr_set = required_attr_set.union(set([attr.split(".")[1] for attr in group_variable_attrs[group_variable]]))
+    
     for attr in required_attr_set:
       script += ((" " * global_indentation) + attr  + " = row[" + schema[attr][0] + "]\n")
 
@@ -146,7 +145,10 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs,
 
 
 def writeProject(S, G, schema, script, global_indentation):
-  """writhe the script of query result projection"""
+  """The function to writhe the script of query result projection"""
+
+
+  # the function writes the script of the results projections. it applies the formatter and the having condition
 
   # get the type
   script += ((" " * global_indentation) + "columns_type = []\n")
@@ -180,17 +182,17 @@ def writeProject(S, G, schema, script, global_indentation):
     all_output_attr += ((" " * global_indentation) + "if " + having + ":\n")
     global_indentation += 2
 
-  
+
   all_output_attr += ((" " * global_indentation) + "data = {") 
   is_date = False
   for i, s in enumerate(S):
     if "." in s:
       splitted = s.split(".")
-      if schema[splitted[1]][1] == 'date':
+      if schema[splitted[1]][1] == 'date' or schema[splitted[1]][1] == 'datetime':
         is_date = True
     if "_" in s:
       splitted = s.split("_")
-      if schema[splitted[2]][1] == 'date':
+      if schema[splitted[2]][1] == 'date' or schema[splitted[2]][1] == 'datetime':
         is_date = True
 
     if i != len(S) - 1:
@@ -205,7 +207,7 @@ def writeProject(S, G, schema, script, global_indentation):
         is_date = False
       else:
         all_output_attr += ('"col' + str(i + 1) + '": ' + 'val["' + s + '"]}')
-
+  
   all_output_attr += ("\n" + (" " * global_indentation) + "print(formatter.format(row_formatter, **data))\n")
 
   if len(G) and len(G[0]):
@@ -216,5 +218,5 @@ def writeProject(S, G, schema, script, global_indentation):
     
   global_indentation -= 8
   script += ((" " * global_indentation) + all_output_attr)
-
+  
   return script

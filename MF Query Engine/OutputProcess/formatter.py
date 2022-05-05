@@ -1,5 +1,5 @@
 def formatterScript(global_indentation):
-  """write the formatter process script"""
+  """The function to write the formatter process script"""
 
   type_formatter = ("\n" + (" " * global_indentation) + 'row_formatter = []\n')
   type_formatter += ((" " * global_indentation) + 'title_formatter = []\n')
