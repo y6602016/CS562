@@ -1,4 +1,16 @@
 import collections
+import re
+
+regex = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])?(T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?)?$'
+match_iso8601 = re.compile(regex).match
+def validate_iso8601(str_val):
+    try:            
+        if match_iso8601(str_val) is not None:
+            return True
+    except:
+        pass
+    return False
+
 
 def processRel(N, C, F):
   """The function to parse grouping variable's aggregation functions used in S, C or G, and create the depending map"""
@@ -69,6 +81,8 @@ def processCondition(V, condition, group_attr, schema):
     processed = ""
     if "." in word:
       attr = word.split(".")[1]
+      if attr not in schema:
+        raise(KeyError("Non-existent Column " + attr))
       if attr in V:
         processed = f'group[{group_attr}]["' + attr + '"]'
         if is_emf:
@@ -85,8 +99,18 @@ def processCondition(V, condition, group_attr, schema):
           special_type = 'datetime'
           special_type_index = i
     elif "_" in word:
+      attr = word.split("_")[2]
+      if attr not in schema:
+        raise(KeyError("Non-existent Column " + attr))
       processed = f'group[{group_attr}]["' + word + '"]'
     else:
+      # if not a string, not a constant number, not an operator, it's a attribute, check it's in column ot not
+      if '"' not in word and "'" not in word and not word.isdigit() and word not in "!@#$%^&*()_-+=={[]}<><=>=!=/andor" and not validate_iso8601(word):
+        if word not in schema:
+          if not validate_iso8601(word):
+            raise (ValueError("Invalid time format " + word))
+          else:
+            raise(KeyError("Non-existent Column " + word))
       if special_type_index > -1 and i == special_type_index + 2: # process the special type object to be compared with
         if special_type == 'date':
           processed = f'date.fromisoformat("' + word + '")'
@@ -145,11 +169,12 @@ def processHaving(having, schema):
     temp_word = word
     word = word.replace("(", "")
     word = word.replace(")", "")
-
     processed = ""
     if "." in word:
       processed = f'val["' + word + '"]'
       attr = word.split(".")[1]
+      if attr not in schema:
+        raise(KeyError("Non-existent Column " + attr))
       if schema[attr][1] == 'date': # if the attribute is special type, mark it then process it later
           special_type = 'date'
           special_type_index = i
@@ -157,8 +182,18 @@ def processHaving(having, schema):
         special_type = 'datetime'
         special_type_index = i
     elif "_" in word:
+      attr = word.split("_")[2]
+      if attr not in schema:
+        raise(KeyError("Non-existent Column " + attr))
       processed = f'val["' + word + '"]'
     else:
+      # if not a string, not a constant number, not an operator, it's a attribute, check it's in column ot not
+      if '"' not in word and "'" not in word and not word.isdigit() and word not in "!@#$%^&*()_-+=={[]}<><=>=!=/andor":
+        if word not in schema:
+          if not validate_iso8601(word):
+            raise (ValueError("Invalid time format " + word))
+          else:
+            raise(KeyError("Non-existent Column " + word))
       if special_type_index > -1 and i == special_type_index + 2:
         if special_type == 'date':
           processed = f'date.fromisoformat("' + word + '")'

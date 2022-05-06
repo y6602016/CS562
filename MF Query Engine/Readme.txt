@@ -42,42 +42,45 @@ copy the part from "<Standard SQL>"
 
 (2) If you modify the query_input.txt manually:
 You should follow the following requirements:
-  1. For SELECT ATTRIBUTE(S):
-    1. Must select all grouping attributes
-    2. Except grouping attributes, please use "." to definde grouping variable's attributes, ex: 1.year, 1.state
-    3. If grouping variable's attributes are projected, please make sure the grouping variable can be narrowed to
-      a single row. (ex: 1.quant == 0_max_quant) If the grouping variable is defined to multiple rows, it doesn't
-      make sense to project the specific row's attribute.
+  1. All commas must be followed by a space, ex:"prod, month"
+  2. All operator values must be the next line or operator titles and in a single line, so the file has total 12 lines.
+  3. Other details of operators:
+    1. For SELECT ATTRIBUTE(S):
+      1. Must select all grouping attributes
+      2. Except grouping attributes, please use "." to definde grouping variable's attributes, ex: 1.year, 1.state
+      3. If grouping variable's attributes are projected, please make sure the grouping variable can be narrowed to
+        a single row. (ex: 1.quant == 0_max_quant) If the grouping variable is defined to multiple rows, it doesn't
+        make sense to project the specific row's attribute.
 
-  2. For NUMBER OF GROUPING VARIABLES(n):
-    1. Must set non-negtive value, value should be >= 0
+    2. For NUMBER OF GROUPING VARIABLES(n):
+      1. Must set non-negtive value, value should be >= 0
 
-  3. For F-VECT([F]):
-    1. Please write the aggregation function in the format "<grouping variable>_<aggregation function>_<attribute>"
-      aggregation function options: avg, sum, max, min, count
-      ex: 0_avg_quant, 1_avg_quant, 1_count_quant, 2_avg_quant, 2_count_quant
-      
-  4. For SELECT CONDITION-VECT([σ]):
-    1. Space between operators is required, ex: 1.cust == cust and 1.quant > 0_avg_quant
-    2. Always start with grouping attribute definition
-    3. All conditions are in the same line, no new line
-    4. Order is in the same order of grouping variables
-    5. Using '==' to express 'equal'
-    6. If there is no condition, please put an empty new line
-      ex: 
-        SELECT CONDITION-VECT([σ]):
+    3. For F-VECT([F]):
+      1. Please write the aggregation function in the format "<grouping variable>_<aggregation function>_<attribute>"
+        aggregation function only can be: avg, sum, max, min, count
+        ex: 0_avg_quant, 1_avg_quant, 1_count_quant, 2_avg_quant, 2_count_quant
+        
+    4. For SELECT CONDITION-VECT([σ]):
+      1. Space between operators is required, ex: 1.cust == cust and 1.quant > 0_avg_quant
+      2. Always start with grouping attribute definition
+      3. All conditions are in the same line, no new line
+      4. Order is in the same order of grouping variables
+      5. Using '==' to express 'equal'
+      6. If there is no condition, please put an empty new line
+        ex: 
+          SELECT CONDITION-VECT([σ]):
 
-        HAVING_CONDITION(G):
+          HAVING_CONDITION(G):
 
-  5. For HAVING_CONDITION(G):
-    1. Space between operators is required, ex: 1.cust == cust and 1.quant > 0_avg_quant
-    2. All conditions are in the same line, no new line
-    3. Using '==' to express 'equal'
-    4. If there is no condition, please put an empty new line
-      ex: 
-        SELECT CONDITION-VECT([σ]):
+    5. For HAVING_CONDITION(G):
+      1. Space between operators is required, ex: 1.cust == cust and 1.quant > 0_avg_quant
+      2. All conditions are in the same line, no new line
+      3. Using '==' to express 'equal'
+      4. If there is no condition, please put an empty new line
+        ex: 
+          SELECT CONDITION-VECT([σ]):
 
-        HAVING_CONDITION(G):
+          HAVING_CONDITION(G):
         
 
 6. After the input file is defined well, you can execute the program with the command:
@@ -90,6 +93,6 @@ If you choose provide input by the keyboard, you should follow the instruction a
 requirements to provide input.
 
 7. After executing the program, it generates a program named "query.py"
-You can execute the output program to view the data witht the command:
+You can execute the output program to view the data with the command:
 python3 query.py    (Please make sure you are in the vurtual environment)
 

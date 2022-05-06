@@ -99,7 +99,7 @@ def connect():
       script += ((" " * global_indentation) + "#= and aggregatation function of grouping variable_0 =\n")
       script += ((" " * global_indentation) + "#=====================================================\n")
       script += ("\n" + (" " * global_indentation) + "#1th Scan:\n")
-      script = writeFirstScan(V, F, schema, script, global_indentation, group_variable_fs)
+      script = writeFirstScan(V, schema, script, global_indentation, group_variable_fs)
       
 
       #====================================================================================

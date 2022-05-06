@@ -20,7 +20,7 @@ def writeMFStructure(mf_structure, mf_type, global_indentation):
 
   return structure
 
-def writeFirstScan(V, F, schema, script, global_indentation, group_variable_fs):
+def writeFirstScan(V, schema, script, global_indentation, group_variable_fs):
   """The function to write the script of first initial scan"""
 
   # the function writes the script of the first scan, the first scan fill grouping attribute into the hashmap
@@ -40,11 +40,15 @@ def writeFirstScan(V, F, schema, script, global_indentation, group_variable_fs):
 
   # extract grouping attributes (ex: cust, prod)
   for attr in V:
+    if attr not in schema:
+      raise(KeyError("Non-existent Column " + attr))
     script += ((" " * global_indentation) + "key_" + attr + " = row[" + schema[attr][0] + "]\n")
 
   # extract aggregated attributes (ex: quant)
   fun_attr_set = set(f[1] for f in F0)
   for attr in fun_attr_set:
+    if attr not in schema:
+      raise(KeyError("Non-existent Column " + attr))
     script += ((" " * global_indentation) + attr + " = row[" + schema[attr][0] + "]\n")
 
   # first filling the grouping attributes, this process only works in first scan
@@ -108,18 +112,24 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs,
     # parse condition and extract the attributes used in C
     processed_condition, such_that_attr = processCondition(V, C[group_variable - 1], group_attr, schema)
     
-    # extract aggregated attributes and attributed used in C (ex: quant)
-    # attrs can be from F, C, S
     script += (f"\n" + (" " * global_indentation) + f"#Process Grouping Variable {group_variable}:\n")
-    fun_attr_set = set(f[1] for f in group_variable_fs[group_variable]) # extract aggregated attributes (From F)
-    required_attr_set = fun_attr_set.union(set(such_that_attr)) # extract attributed used in C (From C)
-    # extract grouping variable's attrribute (those attributes are needed to updated during scans)
+
+    # extract all required attributes for updating in the scan, there are 3 cases
+    # case 1. extract aggregated attributes (From F), ex: "quant" of 1_sum_quant
+    fun_attr_set = set(f[1] for f in group_variable_fs[group_variable]) 
+
+    # case 2. extract attributed used in C (From C), ex: "state" of 1.state == "NY"
+    required_attr_set = fun_attr_set.union(set(such_that_attr)) 
+
+    # case 3. extract grouping variable's attrribute (those attributes are needed to updated during scans)
+    # ex: "quant", "state", "year" of 'select cust, prod, 1.quant, 1.state, 1.year'
     required_attr_set = required_attr_set.union(set([attr.split(".")[1] for attr in group_variable_attrs[group_variable]]))
-    
+
     for attr in required_attr_set:
+      if attr not in schema:
+        raise(KeyError("Non-existent Column " + attr))
       script += ((" " * global_indentation) + attr  + " = row[" + schema[attr][0] + "]\n")
 
-    
     # if the grouping variable has no aggregation function, just apply the condition
     if not group_variable_fs[group_variable]:
       script += noAggregate(group_attr, group_variable_attrs[group_variable], global_indentation, processed_condition)
@@ -139,7 +149,6 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs,
           script += sumScript(group_attr, f, global_indentation, processed_condition)
         else:
           raise (Exception("Unvalid aggregation function"))
-    
   return script
 
 

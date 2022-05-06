@@ -1,11 +1,12 @@
 SELECT ATTRIBUTE(S):
-prod, month, 1_count_quant, 2_count_quant
+cust, prod, 1.quant, 1.state, 1.date
 NUMBER OF GROUPING VARIABLES(n):
-2
+1
 GROUPING ATTRIBUTES(V):
-prod, month
+cust, prod
 F-VECT([F]):
-0_avg_quant, 1_count_quant, 2_count_quant
+0_sum_quant, 1_min_quant, 1_sum_quant
 SELECT CONDITION-VECT([σ]):
-1.prod == prod and 1.month == month - 1 and 1.quant > 0_avg_quant, 2.prod == prod and 2.month == month + 1 and 2.quant > 0_avg_quant
+1.cust == cust and 1.prod == prod and 1.date > 2019-05-31 and 1.date < 2019-09-01
 HAVING_CONDITION(G):
+1_sum_quant * 10 > 0_sum_quant and 1.quant == 1_min_quant and 1_min_quant > 150

@@ -47,8 +47,8 @@ def query():
     #= the data structure of mf_structure is hashtable                                  =
     #= group is a hashtable with grouping attributes as keys and mf_structure as values =
     #====================================================================================
-    mf_structure = {'prod': None, 'month': None, '1_count_quant': None, '2_count_quant': None, '0_avg_quant': None}
-    mf_type = {'prod': 'str', 'month': 'int', '1_count_quant': 'int', '2_count_quant': 'int', '0_avg_quant': 'float'}
+    mf_structure = {'cust': None, 'prod': None, '1.quant': None, '1.state': None, '1.date': None, '0_sum_quant': None, '1_min_quant': None, '1_sum_quant': None}
+    mf_type = {'cust': 'str', 'prod': 'str', '1.quant': 'int', '1.state': 'str', '1.date': 'date', '0_sum_quant': 'int', '1_min_quant': 'int', '1_sum_quant': 'int'}
     group = collections.defaultdict(lambda: dict(mf_structure))
 
 
@@ -59,21 +59,18 @@ def query():
     #=====================================================
 
     #1th Scan:
-    count_0_quant= collections.defaultdict(int)
     for row in rows:
       #Grouping attributes:
+      key_cust = row[0]
       key_prod = row[1]
-      key_month = row[3]
       quant = row[6]
-      if not group[(key_prod, key_month)]["prod"]:
-        group[(key_prod, key_month)]["prod"] = key_prod
-        group[(key_prod, key_month)]["month"] = key_month
-      if not group[(key_prod, key_month)]["0_avg_quant"]:
-        group[(key_prod, key_month)]["0_avg_quant"] = quant
-        count_0_quant[(key_prod, key_month)] += 1
+      if not group[(key_cust, key_prod)]["cust"]:
+        group[(key_cust, key_prod)]["cust"] = key_cust
+        group[(key_cust, key_prod)]["prod"] = key_prod
+      if not group[(key_cust, key_prod)]["0_sum_quant"]:
+        group[(key_cust, key_prod)]["0_sum_quant"] = quant
       else:
-        count_0_quant[(key_prod, key_month)] += 1
-        group[(key_prod, key_month)]["0_avg_quant"] += ((quant - group[(key_prod, key_month)]["0_avg_quant"])/count_0_quant[(key_prod, key_month)])
+        group[(key_cust, key_prod)]["0_sum_quant"] += quant
 
 
 
@@ -83,31 +80,37 @@ def query():
     #===================================================================
 
     #2th Scan:
-    for (key_prod, key_month) in group:
+    for (key_cust, key_prod) in group:
       for row in rows:
         #Grouping attributes:
+        cust = row[0]
         prod = row[1]
-        month = row[3]
 
         #Process Grouping Variable 1:
+        state = row[5]
         quant = row[6]
+        date = row[7]
         try:
-          if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month + 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
-            if not group[(key_prod, key_month)]["1_count_quant"]:
-              group[(key_prod, key_month)]["1_count_quant"] = 1
+          if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > date.fromisoformat("2019-05-31") and date < date.fromisoformat("2019-09-01"):
+            if not group[(key_cust, key_prod)]["1_min_quant"]:
+              group[(key_cust, key_prod)]["1_min_quant"] = quant
+              group[(key_cust, key_prod)]["1.date"] = date
+              group[(key_cust, key_prod)]["1.state"] = state
+              group[(key_cust, key_prod)]["1.quant"] = quant
             else:
-              group[(key_prod, key_month)]["1_count_quant"] += 1
+              if quant < group[(key_cust, key_prod)]["1_min_quant"]:
+                group[(key_cust, key_prod)]["1_min_quant"] = quant
+                group[(key_cust, key_prod)]["1.date"] = date
+                group[(key_cust, key_prod)]["1.state"] = state
+                group[(key_cust, key_prod)]["1.quant"] = quant
         except(TypeError):
           pass
-
-        #Process Grouping Variable 2:
-        quant = row[6]
         try:
-          if group[(key_prod, key_month)]["prod"] == prod and group[(key_prod, key_month)]["month"] == month - 1 and quant > group[(key_prod, key_month)]["0_avg_quant"]:
-            if not group[(key_prod, key_month)]["2_count_quant"]:
-              group[(key_prod, key_month)]["2_count_quant"] = 1
+          if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > date.fromisoformat("2019-05-31") and date < date.fromisoformat("2019-09-01"):
+            if not group[(key_cust, key_prod)]["1_sum_quant"]:
+              group[(key_cust, key_prod)]["1_sum_quant"] = quant
             else:
-              group[(key_prod, key_month)]["2_count_quant"] += 1
+              group[(key_cust, key_prod)]["1_sum_quant"] += quant
         except(TypeError):
           pass
 
@@ -116,10 +119,11 @@ def query():
     #= formatter process and output the query result   =
     #===================================================
     columns_type = []
+    columns_type.append(mf_type["cust"])
     columns_type.append(mf_type["prod"])
-    columns_type.append(mf_type["month"])
-    columns_type.append(mf_type["1_count_quant"])
-    columns_type.append(mf_type["2_count_quant"])
+    columns_type.append(mf_type["1.quant"])
+    columns_type.append(mf_type["1.state"])
+    columns_type.append(mf_type["1.date"])
 
     row_formatter = []
     title_formatter = []
@@ -135,12 +139,16 @@ def query():
         title_formatter.append("{:<15}")
     title_formatter = "|".join(title_formatter)
     row_formatter = "|".join(row_formatter)
-    print(title_formatter.format("prod", "month", "1_count_quant", "2_count_quant"))
+    print(title_formatter.format("cust", "prod", "1.quant", "1.state", "1.date"))
 
     formatter = Formatter()
     for val in group.values():
-      data = {"col1": val["prod"], "col2": val["month"], "col3": val["1_count_quant"], "col4": val["2_count_quant"]}
-      print(formatter.format(row_formatter, **data))
+      try:
+        if val["1_sum_quant"] * 10 > val["0_sum_quant"] and val["1.quant"] == val["1_min_quant"] and val["1_min_quant"] > 150:
+          data = {"col1": val["cust"], "col2": val["prod"], "col3": val["1.quant"], "col4": val["1.state"], "col5": str(val["1.date"])}
+          print(formatter.format(row_formatter, **data))
+      except(TypeError):
+        pass
 
   except (Exception, psycopg2.DatabaseError) as error:
     print("Error detected:")
