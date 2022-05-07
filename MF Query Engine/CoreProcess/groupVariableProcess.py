@@ -99,6 +99,9 @@ def processCondition(V, condition, group_attr, schema):
           special_type = 'datetime'
           special_type_index = i
     elif "_" in word:
+      func = word.split("_")[1]
+      if func not in ("sum", "max", "min", "avg", "count"):
+        raise(ValueError("Unvalid aggregation function " + func))
       attr = word.split("_")[2]
       if attr not in schema:
         raise(KeyError("Non-existent Column " + attr))
@@ -120,16 +123,24 @@ def processCondition(V, condition, group_attr, schema):
         special_type = None
       elif emf_process_index > -1:
         if i == emf_process_index + 1 and (word == ">" or word == "<"):
-          if word == ">":
-            processed = "<"
-          elif word == "<":
-            processed = ">"
+          processed = "<" if word == ">" else ">"
+          if splitted[i + 2] == "+" or splitted[i + 2] == "-":
+            splitted[i + 2] = "-" if splitted[i + 2] == "+" else "+"
+          elif splitted[i + 2] == "*" or splitted[i + 2] == "/":
+            splitted[i + 2] = "/" if splitted[i + 2] == "*" else "/"
           emf_process_index = - 1
-        elif i == emf_process_index + 3 and (word == "+" or word == "-"):
-          if word == "-":
-            processed = "+"
-          elif word == "+":
-            processed = "-"
+        elif i == emf_process_index + 1 and (word == ">=" or word == "<="):
+          processed = "<=" if word == ">=" else ">="
+          if splitted[i + 2] == "+" or splitted[i + 2] == "-":
+            splitted[i + 2] = "-" if splitted[i + 2] == "+" else "+"
+          elif splitted[i + 2] == "*" or splitted[i + 2] == "/":
+            splitted[i + 2] = "/" if splitted[i + 2] == "*" else "/"
+          emf_process_index = - 1
+        elif splitted[emf_process_index + 1] == "==" and i == emf_process_index + 3 and (word == "+" or word == "-"):
+          processed = "-" if word == "+" else "+"
+          emf_process_index = - 1
+        elif splitted[emf_process_index + 1] == "==" and i == emf_process_index + 3 and (word == "*" or word == "/"):
+          processed = "/" if word == "*" else "/"
           emf_process_index = - 1
         else:
           processed = word
@@ -182,6 +193,9 @@ def processHaving(having, schema):
         special_type = 'datetime'
         special_type_index = i
     elif "_" in word:
+      func = word.split("_")[1]
+      if func not in ("sum", "max", "min", "avg", "count"):
+        raise(ValueError("Unvalid aggregation function " + func))
       attr = word.split("_")[2]
       if attr not in schema:
         raise(KeyError("Non-existent Column " + attr))

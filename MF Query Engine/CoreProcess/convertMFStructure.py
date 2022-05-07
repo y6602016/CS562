@@ -52,6 +52,6 @@ def getType(attr, mf_type, schema):
     else: # case3: grouping attribute
       mf_type[attr] = type[schema[attr][1]]
   except (KeyError) as error:
-    raise(KeyError("Unvalid column " + str(error)))
+    raise(KeyError("Non-existent Column " + str(error)))
 
 

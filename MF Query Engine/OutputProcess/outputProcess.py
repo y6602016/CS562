@@ -72,7 +72,7 @@ def writeFirstScan(V, schema, script, global_indentation, group_variable_fs):
     elif f[0] == "sum":
       script += sumScript(group_attr, f, global_indentation, None)
     else:
-      raise (Exception("Unvalid aggregation function"))
+      raise (ValueError("Unvalid aggregation function " + f))
 
 
   return script
@@ -148,7 +148,7 @@ def writeGroupVariableScan(V, C, schema, to_be_scan, group_variable_fs,
         elif f[0] == "sum":
           script += sumScript(group_attr, f, global_indentation, processed_condition)
         else:
-          raise (Exception("Unvalid aggregation function"))
+          raise (ValueError("Unvalid aggregation function " + f))
   return script
 
 

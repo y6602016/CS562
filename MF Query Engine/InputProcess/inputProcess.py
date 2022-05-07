@@ -120,14 +120,18 @@ def convertOperands(input_file):
       operands[operand].append(value)
 
   if not operands["SELECT ATTRIBUTE(S)"] or not operands["NUMBER OF GROUPING VARIABLES(n)"]:
-    return False
+    raise (ValueError("Empty SELECT ATTRIBUTE(S) or NUMBER OF GROUPING VARIABLES(n)"))
 
 
   if int(operands["NUMBER OF GROUPING VARIABLES(n)"][0]) < 0:
-    return False
+    raise (ValueError("NUMBER OF GROUPING VARIABLES(n) must be non-negative value"))
   
 
-  if int(operands["NUMBER OF GROUPING VARIABLES(n)"][0]) >= 0 and not operands["GROUPING ATTRIBUTES(V)"]:
-    return False
+  if int(operands["NUMBER OF GROUPING VARIABLES(n)"][0]) != len(operands["SELECT CONDITION-VECT([σ])"]):
+    raise (ValueError("NUMBER OF GROUPING VARIABLES(n) is wrong"))
+
+  for group_attr in operands["GROUPING ATTRIBUTES(V)"]:
+    if group_attr not in operands["SELECT ATTRIBUTE(S)"]:
+      raise (ValueError("SELECT ATTRIBUTE(S) must contain all grouping attributes"))
   
   return operands
