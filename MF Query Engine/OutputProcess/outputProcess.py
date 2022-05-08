@@ -2,6 +2,15 @@ from OutputProcess.aggregateProcess import *
 from CoreProcess.groupVariableProcess import *
 from OutputProcess.formatter import *
 
+def writeQueryTable(table_name, global_indentation):
+  """The function to write the script of query all rows from the table"""
+  structure = ""
+  structure += ("\n" + (" " * global_indentation) + f"query = 'select * from {table_name}'\n")
+  structure += ((" " * global_indentation) + "cursor.execute(query)\n")
+  structure += ((" " * global_indentation) + "rows = cursor.fetchall()\n")
+  return structure
+
+
 def writeMFStructure(mf_structure, mf_type, global_indentation):
   """The function to write the script of mf_structure and group hashtable used for scanning"""
 

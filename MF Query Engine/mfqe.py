@@ -32,7 +32,7 @@ def connect():
   script = template.read() + "\n"
   template.close()
 
-  menu()
+  table_name = menu()
   conn = None
 
   try:
@@ -56,7 +56,7 @@ def connect():
     #= convert operands and get the db column type =
     #===============================================
     operands = convertOperands(input_file)
-    schema = processSchema(cur)
+    schema = processSchema(table_name, cur)
 
 
     if not operands:
@@ -73,7 +73,7 @@ def connect():
       #= create mf-structure =
       #=======================
       mf_structure, mf_type = convertMFStructure(S, F, G, schema)
-      
+      script += writeQueryTable(table_name, global_indentation)
       script += writeMFStructure(mf_structure, mf_type, global_indentation)
       
 

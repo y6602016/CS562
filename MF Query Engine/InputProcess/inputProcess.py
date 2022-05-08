@@ -1,6 +1,6 @@
 def menu():
   """The menu function for users to key in inputs by keyboard"""
-
+  table_name = input("Please provide the table name:\n")
   valid_select = False
   while not valid_select:
     value = input("\nPlease select the way to read operands:\n1: From the query_input.txt file\n2: Enter value by keyboard\n")
@@ -88,6 +88,8 @@ def menu():
       valid_select = True
     else:
       print("Invalid input, please select 1 or 2")
+    
+  return table_name
 
 
 def convertOperands(input_file):

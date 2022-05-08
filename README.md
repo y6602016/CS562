@@ -61,8 +61,12 @@ Some test inputs are provided in the "Test cases" folders. Please copy the part 
   ```
   python3 mfqe.py
   ```
-- Select 1 for reading the input file or Select 2 for providing input from keyboard. 
-- Execute the generated query program
+  ** Please make sure executing the program in the vurtual environment and the Config folder should be in the same folder with query.py **
+
+
+- Provide the table name and Select 1 for reading the input file or Select 2 for providing input from keyboard. 
+- Execute the generated query program 
   ```
   python3 query.py
   ```
+  ** Please make sure executing the program in the vurtual environment and the Config folder should be in the same folder with query.py **

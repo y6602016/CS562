@@ -87,11 +87,13 @@ You should follow the following requirements:
 6. After the input file is defined well, you can execute the program with the command:
 python3 mfqe.py    
 
-After execution, you can choose:
-1. Enter "1" to read the input from the text file (recommended)
-2. Enter "2" to provide inputs by the keyboard. 
-If you choose provide input by the keyboard, you should follow the instruction and above operators
-requirements to provide input.
+After execution, you should 
+1. provide the table name
+2. choose:
+  1. Enter "1" to read the input from the text file (recommended)
+  2. Enter "2" to provide inputs by the keyboard. 
+  If you choose provide input by the keyboard, you should follow the instruction and above operators
+  requirements to provide input.
 
 
 ** Please make sure executing the program in the vurtual environment and the Config folder should be in the same folder with query.py **

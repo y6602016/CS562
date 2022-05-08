@@ -1,40 +1,8 @@
 import psycopg2
 import collections
-# from Config.config import config
+from Config.config import config
 from datetime import date, datetime
 import string
-
-from configparser import ConfigParser
-import pathlib
-
-path = str(pathlib.Path(__file__).parent.resolve())
-
-database = u"""
-[postgresql]
-host=localhost
-database=project
-user=mike
-password=""
-"""
-
-def config(filename = path + '/database.ini', section = 'postgresql'):
-    # create a parser
-    parser = ConfigParser()
-    # read config file
-    parser.read_string(database)
-    # parser.read(filename)
-
-    # get section, default to postgresql
-    db = {}
-    if parser.has_section(section):
-        params = parser.items(section)
-        for param in params:
-            db[param[0]] = param[1]
-    else:
-        raise Exception('Section {0} not found in the {1} file'.format(section, filename))
-
-    return db
-
 
 #==============================================
 #= The class used to handle output None value =
@@ -72,7 +40,6 @@ def query():
     query = 'select * from sales'
     cursor.execute(query)
     rows = cursor.fetchall()
-  
 
 
     #====================================================================================
@@ -119,22 +86,22 @@ def query():
         prod = row[1]
 
         #Process Grouping Variable 1:
-        quant = row[6]
-        date = row[7]
         state = row[5]
+        date = row[7]
+        quant = row[6]
         try:
           if group[(key_cust, key_prod)]["cust"] == cust and group[(key_cust, key_prod)]["prod"] == prod and date > date.fromisoformat("2019-05-31") and date < date.fromisoformat("2019-09-01"):
             if not group[(key_cust, key_prod)]["1_min_quant"]:
               group[(key_cust, key_prod)]["1_min_quant"] = quant
-              group[(key_cust, key_prod)]["1.quant"] = quant
               group[(key_cust, key_prod)]["1.date"] = date
               group[(key_cust, key_prod)]["1.state"] = state
+              group[(key_cust, key_prod)]["1.quant"] = quant
             else:
               if quant < group[(key_cust, key_prod)]["1_min_quant"]:
                 group[(key_cust, key_prod)]["1_min_quant"] = quant
-                group[(key_cust, key_prod)]["1.quant"] = quant
                 group[(key_cust, key_prod)]["1.date"] = date
                 group[(key_cust, key_prod)]["1.state"] = state
+                group[(key_cust, key_prod)]["1.quant"] = quant
         except(TypeError):
           pass
         try:
