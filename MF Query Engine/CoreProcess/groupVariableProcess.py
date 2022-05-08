@@ -64,6 +64,7 @@ def processCondition(V, condition, group_attr, schema):
     if i != len(V) - 1:
       mf_check += " and "
 
+  # check the query is MF or EMF
   is_emf = False
   if mf_check not in condition or (len(mf_check) + 1 < len(condition) and condition[len(mf_check) + 1] != "and"):
     is_emf = True
@@ -85,7 +86,7 @@ def processCondition(V, condition, group_attr, schema):
         raise(KeyError("Non-existent Column " + attr))
       if attr in V:
         processed = f'group[{group_attr}]["' + attr + '"]'
-        if is_emf:
+        if is_emf: # if it's emf query, record the index to process later operators
           emf_process_index = i
       # the attributes of grouping variable appear in condition statement should be recorded
       # such that we can update the attributes in the scan
@@ -107,13 +108,10 @@ def processCondition(V, condition, group_attr, schema):
         raise(KeyError("Non-existent Column " + attr))
       processed = f'group[{group_attr}]["' + word + '"]'
     else:
-      # if not a string, not a constant number, not an operator, it's a attribute, check it's in column ot not
+      # if not a string/constant number/operator/datetime, it's a attribute, check it's in column ot not
       if '"' not in word and "'" not in word and not word.isdigit() and word not in "!@#$%^&*()_-+=={[]}<><=>=!=/andor" and not validate_iso8601(word):
         if word not in schema:
-          if not validate_iso8601(word):
-            raise (ValueError("Invalid time format " + word))
-          else:
-            raise(KeyError("Non-existent Column " + word))
+          raise(KeyError("Non-existent Column or wrong value in condition statement: " + word))
       if special_type_index > -1 and i == special_type_index + 2: # process the special type object to be compared with
         if special_type == 'date':
           processed = f'date.fromisoformat("' + word + '")'
@@ -121,6 +119,7 @@ def processCondition(V, condition, group_attr, schema):
           processed = f'datetime.fromisoformat("' + word + '")'
         special_type_index = -1
         special_type = None
+      # the logic to process EMF
       elif emf_process_index > -1:
         if i == emf_process_index + 1 and (word == ">" or word == "<"):
           processed = "<" if word == ">" else ">"
@@ -201,13 +200,10 @@ def processHaving(having, schema):
         raise(KeyError("Non-existent Column " + attr))
       processed = f'val["' + word + '"]'
     else:
-      # if not a string, not a constant number, not an operator, it's a attribute, check it's in column ot not
-      if '"' not in word and "'" not in word and not word.isdigit() and word not in "!@#$%^&*()_-+=={[]}<><=>=!=/andor":
+      # if not a string/constant number/operator/datetime, it's a attribute, check it's in column ot not
+      if '"' not in word and "'" not in word and not word.isdigit() and word not in "!@#$%^&*()_-+=={[]}<><=>=!=/andor"  and not validate_iso8601(word):
         if word not in schema:
-          if not validate_iso8601(word):
-            raise (ValueError("Invalid time format " + word))
-          else:
-            raise(KeyError("Non-existent Column " + word))
+          raise(KeyError("Non-existent Column or wrong value in condition statement: " + word))
       if special_type_index > -1 and i == special_type_index + 2:
         if special_type == 'date':
           processed = f'date.fromisoformat("' + word + '")'
